@@ -1,28 +1,48 @@
 #ifndef CONTEXT_H
 #define CONTEXT_H
 
-struct Cursor {
-    int32_t cx, cy, rx;
+#include <unistd.h>
+
+#include <cstdint>
+#include <filesystem>
+#include <string>
+#include <vector>
+
+struct TFM_Cursor {
+    int32_t cx = 0;
+    int32_t cy = 0;
 };
 
-class Context {
+class TFM_Context {
    private:
-    Cursor m_cursor;
-    std::vector<std::string> m_commands;
+    TFM_Cursor m_cursor;
+    std::filesystem::path m_dir;
 
-    std::string working_dir;
+    std::vector<std::string> m_input_buf;
 
    public:
-    Context(void) = 0;
-    ~Context() = 0;
+    TFM_Context() : m_cursor{0, 0}, m_dir(std::filesystem::current_path()){};
+    ~TFM_Context() = default;
 
-    Cursor cursor_get(void);
-    void cursor_set(Cursor cursor);
+    // getters/setters
+    const TFM_Cursor& cursor_get() const { return m_cursor; }
+    void cursor_set(const TFM_Cursor& cursor) { m_cursor = cursor; }
 
-    Cursor working_dir_get(void);
-    void working_dir_set(std::string cursor);
+    const std::filesystem::path& working_dir_get() const { return m_dir; }
+    void working_dir_set(const std::filesystem::path& dir) { m_dir = dir; }
+
+    const std::vector<std::string>& input_buf_get() const {
+        return m_input_buf;
+    }
+    void input_buf_set(const std::vector<std::string>& input_buf) {
+        m_input_buf = input_buf;
+    }
+
+    // methods
+    void input_buf_clear() { m_input_buf.clear(); }
 };
 
-
+void ncurses_init();
+void ncurses_destroy();
 
 #endif
