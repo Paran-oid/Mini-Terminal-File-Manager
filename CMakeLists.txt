@@ -10,6 +10,8 @@ set(SRC
 	core/builtins/builtins.cpp
 	ui/input/input.cpp 
 	ui/render/render.cpp
+	utils/string_utils.cpp
+	core/parser/parser.cpp
 )
 
 add_executable(TFM ${SRC})
@@ -18,10 +20,12 @@ find_package(Curses REQUIRED)
 target_link_libraries(TFM PRIVATE ${CURSES_LIBRARIES})
 
 target_include_directories(TFM PRIVATE 
-	${CURSES_INCLUDE_DIR}         
+	${CURSES_INCLUDE_DIR}        
+	${CMAKE_SOURCE_DIR}/utils
 	${CMAKE_SOURCE_DIR}/ui/input
 	${CMAKE_SOURCE_DIR}/ui/render
 	${CMAKE_SOURCE_DIR}/core
 	${CMAKE_SOURCE_DIR}/core/builtins
+	${CMAKE_SOURCE_DIR}/core/parser
 )
 

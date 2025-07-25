@@ -9,6 +9,7 @@ int32_t main(void) {
     TFM_Context context = TFM_Context();
     register_builtins();
     ncurses_init();
+    signals_remap();
 
     while (1) {
         TFM_screen_refresh(context);

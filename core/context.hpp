@@ -44,5 +44,6 @@ class TFM_Context {
 
 void ncurses_init();
 void ncurses_destroy();
+void signals_remap();
 
 #endif
