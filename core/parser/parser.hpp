@@ -4,11 +4,8 @@
 #include <string>
 #include <vector>
 
-struct Command {
-    std::string name;
-    std::vector<std::string> args;
-};
+struct TFM_Command;
 
-Command parser_command(const std::string& input);
+TFM_Command parser_command(const std::string& input);
 
 #endif
