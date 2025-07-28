@@ -1,1 +1,20 @@
-build/compile_commands.json
+[
+{
+  "directory": "/home/aziz/Documents/Coding/Projects/Software/Terminal File Manager/build",
+  "command": "/usr/bin/c++  -I\"/home/aziz/Documents/Coding/Projects/Software/Terminal File Manager/include_dir\" -g -std=c++23 -o CMakeFiles/TFM.dir/src/main.cpp.o -c \"/home/aziz/Documents/Coding/Projects/Software/Terminal File Manager/src/main.cpp\"",
+  "file": "/home/aziz/Documents/Coding/Projects/Software/Terminal File Manager/src/main.cpp",
+  "output": "CMakeFiles/TFM.dir/src/main.cpp.o"
+},
+{
+  "directory": "/home/aziz/Documents/Coding/Projects/Software/Terminal File Manager/build",
+  "command": "/usr/bin/c++  -I\"/home/aziz/Documents/Coding/Projects/Software/Terminal File Manager/include_dir\" -g -std=c++23 -o CMakeFiles/TFM.dir/src/config.cpp.o -c \"/home/aziz/Documents/Coding/Projects/Software/Terminal File Manager/src/config.cpp\"",
+  "file": "/home/aziz/Documents/Coding/Projects/Software/Terminal File Manager/src/config.cpp",
+  "output": "CMakeFiles/TFM.dir/src/config.cpp.o"
+},
+{
+  "directory": "/home/aziz/Documents/Coding/Projects/Software/Terminal File Manager/build",
+  "command": "/usr/bin/c++  -I\"/home/aziz/Documents/Coding/Projects/Software/Terminal File Manager/include_dir\" -g -std=c++23 -o CMakeFiles/TFM.dir/src/terminal.cpp.o -c \"/home/aziz/Documents/Coding/Projects/Software/Terminal File Manager/src/terminal.cpp\"",
+  "file": "/home/aziz/Documents/Coding/Projects/Software/Terminal File Manager/src/terminal.cpp",
+  "output": "CMakeFiles/TFM.dir/src/terminal.cpp.o"
+}
+]
