@@ -15,8 +15,11 @@ void terminal_init() {
     keypad(stdscr, TRUE);
     noecho();
 
-    curs_set(0);  // hide cursor
-    timeout(0);   // don't allow delay for keypresses
+    // hide cursor
+    // curs_set(0);
+
+    // don't allow delay for keypresses
+    // timeout(0);
 
     std::signal(SIGINT, handle_exit);
 }

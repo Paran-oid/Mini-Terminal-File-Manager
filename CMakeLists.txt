@@ -17,6 +17,9 @@ set(SRC
 	src/main.cpp
 	src/config.cpp
 	src/terminal.cpp	
+	src/renderer.cpp
+	src/input.cpp
+	src/core.cpp
 )
 set(include_dir
 	${CMAKE_SOURCE_DIR}/include)
