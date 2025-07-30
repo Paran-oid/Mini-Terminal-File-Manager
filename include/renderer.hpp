@@ -15,7 +15,7 @@ class TFMRenderer {
    public:
     TFMRenderer(TFMConfig& conf) : m_conf{conf} {}
 
-    void buf_append(const std::string&);
+    void buf_append(const std::string& data);
 
     uint8_t adjust_scroll();
     uint8_t draw();

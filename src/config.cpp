@@ -2,18 +2,31 @@
 
 #include <ncurses.h>
 
-void _die(const std::string& filename, int32_t line,
-          const std::string& message) {
-    endwin();
-    fprintf(stderr, "Error at %s:%d: %s\n", filename.c_str(), line,
-            message.c_str());
-    std::exit(1);
-}
-
 void TFMConfig::screen_dimensions_update() {
     getmaxyx(stdscr, m_screen.rows, m_screen.cols);
 }
 
-void TFMConfig::append_row(const std::string& content) {
-    m_rows.push_back(content);
+uint8_t TFMConfig::row_append(const std::string& data) {
+    m_rows.push_back(data);
+    return 0;
+}
+
+uint8_t TFMConfig::row_update(const std::string& data, int32_t at) {
+    if (at < 0 || at >= m_rows.size()) {
+        return 1;
+    }
+
+    m_rows[at] = data;
+    return 0;
+}
+
+std::string TFMConfig::row_at(int32_t at) const { return m_rows[at]; }
+size_t TFMConfig::rows_size() const { return m_rows.size(); }
+uint8_t TFMConfig::is_cursor_at_last_row() {
+    return m_cursor.cy == m_rows.size() - 1;
+}
+
+uint8_t TFMConfig::is_cursor_at_commandline() {
+    return m_cursor.cy == m_commandline.row_index &&
+           m_cursor.cx == m_commandline.data.length();
 }

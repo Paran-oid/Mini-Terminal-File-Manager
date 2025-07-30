@@ -12,8 +12,7 @@ class TFMInput {
    public:
     TFMInput(TFMConfig& conf) : m_conf{conf} {}
 
-    void cursor_move();
-	
+    uint8_t cursor_move(int32_t direction);
     uint8_t process();
 };
 

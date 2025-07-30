@@ -17,8 +17,8 @@ int main(void) {
     /*
      *	Make sure rows are trackers just like in SCOOM
      *	Make sure the cursor gets updated according to the point getting
-     *clicked Create a Renderer and InputHandler class and make them do
-     *their jobs Just follow CHECKLIST.md
+     *	clicked Create a Renderer and InputHandler class and make them do
+     *	their jobs Just follow CHECKLIST.md
      */
     while (1) {
         renderer.display();
