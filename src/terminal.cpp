@@ -22,6 +22,8 @@ void terminal_init() {
     // timeout(0);
 
     std::signal(SIGINT, handle_exit);
+
+    // TODO: make it resize the window and refresh if window was resized.
 }
 
 void terminal_destroy() {

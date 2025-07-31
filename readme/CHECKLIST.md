@@ -2,8 +2,8 @@
 
 ~~Init raw mode & ncurses correctly~~
 ~~Track terminal dimensions~~
-~~Create input/output loop
-~~Track cursor & screen state
+~~Create input/output loop~~
+~~Track cursor & screen state~~
 ~~Implement arrow key handling
 ~~Implement vertical scrolling
 ~~Build directory reader

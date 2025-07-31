@@ -15,11 +15,15 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(SRC 
 	src/main.cpp
-	src/config.cpp
 	src/terminal.cpp	
 	src/renderer.cpp
 	src/input.cpp
 	src/core.cpp
+	src/app.cpp
+	src/screen.cpp
+	src/rows.cpp
+	src/cursor.cpp
+
 )
 set(include_dir
 	${CMAKE_SOURCE_DIR}/include)
