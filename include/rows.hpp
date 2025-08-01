@@ -13,11 +13,14 @@ class TFMRows {
     TFMRows() = default;
     ~TFMRows() = default;
 
+    std::string at(size_t at) const;
+    std::string front();
+    std::string back();
     size_t size() const;
 
-    std::string at(int32_t at) const;
-    uint8_t append(const std::string& data);
-    uint8_t update(const std::string& data, int32_t at);
+    void pop_back();
+    void append(const std::string& data);
+    void update(const std::string& data, size_t at);
 };
 
 #endif

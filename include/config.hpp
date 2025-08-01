@@ -7,14 +7,20 @@
 
 class TFMConfig {
    private:
-    uint8_t m_started = 0;
+    bool m_command_state = 0;
+    bool m_program_state = 1;
 
    public:
     TFMConfig() = default;
     ~TFMConfig() = default;
 
-    uint8_t get_started() const { return m_started; }
-    void set_started(uint8_t started) { m_started = started; }
+    bool is_in_command() { return m_command_state; }
+    void enable_command() { m_command_state = 1; }
+    void disable_command() { m_command_state = 0; }
+
+    bool is_program_running() { return m_program_state; }
+    void start_program() { m_program_state = 1; }
+    void end_program() { m_program_state = 0; }
 };
 
 #endif

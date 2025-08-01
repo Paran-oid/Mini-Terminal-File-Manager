@@ -28,8 +28,8 @@ class TFMRenderer {
                 TFMPathHandler& path, TFMCursor& cursor,
                 TFMCommandline& commandline)
         : m_conf{conf},
-          m_screen{screen},
           m_rows{rows},
+          m_screen{screen},
           m_path{path},
           m_cursor{cursor},
           m_commandline{commandline} {}
@@ -37,9 +37,9 @@ class TFMRenderer {
 
     void buf_append(const std::string& data);
 
-    uint8_t adjust_scroll();
-    uint8_t draw();
-    uint8_t display();
+    void adjust_scroll();
+    void draw();
+    void display();
     void path_insert();
 };
 

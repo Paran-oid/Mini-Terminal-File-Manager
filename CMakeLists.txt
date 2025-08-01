@@ -9,7 +9,15 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
+set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fsanitize=address")
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+
+# Enable debugging symbols
+set(CMAKE_BUILD_TYPE Debug)
+
 
 # SRC and include directories
 
@@ -31,6 +39,29 @@ set(include_dir
 # executables and including files and packages
 
 add_executable(TFM ${SRC})
+
+# Compiler warnings and errors - GCC/Clang
+target_compile_options(TFM PRIVATE
+    -Wall            # Enable most warnings
+    -Wextra          # Enable extra warnings
+    -Wpedantic       # Enforce strict ISO compliance
+    -Werror          # Treat warnings as errors
+    -Wshadow         # Warn on variable shadowing
+    -Wconversion     # Warn on implicit conversions
+    -Wsign-conversion # Warn on signed/unsigned conversions
+    -Wformat=2       # Enable extra format checking
+    -fsanitize=address # Optional: Address sanitizer for runtime memory errors (if supported)
+)
+
+# For MSVC compiler, a similar set:
+if(MSVC)
+    target_compile_options(TFM PRIVATE
+        /W4       # Warning level 4 (highest)
+        /WX       # Treat warnings as errors
+        /permissive-  # Strict standard compliance
+        /Zc:__cplusplus  # Enable latest C++ conformance mode
+    )
+endif()
 
 find_package(Curses REQUIRED)
 target_link_libraries(TFM PRIVATE ${CURSES_LIBRARIES})

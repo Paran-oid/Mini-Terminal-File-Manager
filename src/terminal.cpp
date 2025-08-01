@@ -7,11 +7,12 @@
 #include <cstdio>
 #include <iostream>
 
-static void handle_exit(int32_t sig) { std::exit(0); }
+static void handle_exit(int32_t sig __attribute__((unused))) { std::exit(0); }
 
 void terminal_init() {
     initscr();
     raw();
+
     keypad(stdscr, TRUE);
     noecho();
 

@@ -3,10 +3,8 @@
 #include "terminal.hpp"
 
 void TFMApp::run() {
-    while (1) {
+    while (m_conf.is_program_running()) {
         m_renderer.display();
-        if (m_input.process() == 2) {
-            break;
-        }
+        m_input.process();
     }
 }

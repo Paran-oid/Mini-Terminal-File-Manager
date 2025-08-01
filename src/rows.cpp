@@ -1,18 +1,32 @@
 #include "rows.hpp"
 
-uint8_t TFMRows::append(const std::string& data) {
+#include <stdexcept>
+
+void TFMRows::append(const std::string& data) {
+    if (data.empty()) {
+        std::invalid_argument("TFMRows: empty data passed in parameters");
+    }
+
     m_rows.push_back(data);
-    return 0;
 }
 
-uint8_t TFMRows::update(const std::string& data, int32_t at) {
-    if (at < 0 || at >= m_rows.size()) {
-        return 1;
+void TFMRows::update(const std::string& data, size_t at) {
+    if (at >= m_rows.size()) {
+        throw std::out_of_range("TFMRows: passed an invalid 'at' paramter");
     }
 
     m_rows[at] = data;
-    return 0;
+}
+void TFMRows::pop_back() { m_rows.pop_back(); }
+
+std::string TFMRows::at(size_t at) const {
+    if (at >= m_rows.size()) {
+        throw std::out_of_range("TFMRows: passed an invalid 'at' paramter");
+    }
+    return m_rows[at];
 }
 
-std::string TFMRows::at(int32_t at) const { return m_rows[at]; }
+std::string TFMRows::front() { return m_rows.front(); }
+std::string TFMRows::back() { return m_rows.back(); }
+
 size_t TFMRows::size() const { return m_rows.size(); }

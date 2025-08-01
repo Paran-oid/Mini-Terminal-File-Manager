@@ -19,6 +19,8 @@ class TFMCursor {
     TFMRows& m_rows;
     TFMScreen& m_screen;
 
+    // TODO: handle render cursor
+
    public:
     TFMCursor(TFMCommandline& commandline, TFMRows& rows, TFMScreen& screen)
         : m_commandline{commandline}, m_rows{rows}, m_screen{screen} {
@@ -27,11 +29,13 @@ class TFMCursor {
     ~TFMCursor() = default;
 
     Cursor get() { return m_cursor; }
-    void set(const Cursor& new_cursor) { m_cursor = new_cursor; }
+    void set(int32_t cx, int32_t cy) { m_cursor = {cx, convert_cx_rx(cx), cy}; }
 
-    uint8_t move(int32_t direction);
-    uint8_t is_cursor_at_last_row();
-    uint8_t is_cursor_at_commandline();
+    int32_t convert_cx_rx(int32_t cx);
+
+    void move(int32_t direction);
+    bool is_cursor_at_last_row();
+    bool is_cursor_at_commandline();
 };
 
 #endif
