@@ -28,6 +28,8 @@ void TFMInput::remove(std::string& last_row, Cursor& cursor) {
     m_rows.update(last_row, static_cast<size_t>(cursor.cy));
 }
 
+void TFMInput::execute(const std::string& command) {}
+
 void TFMInput::process() {
     int32_t c = getch();
 
@@ -49,7 +51,11 @@ void TFMInput::process() {
             m_conf.enable_command();
             last_row += '\n';
             m_rows.update(last_row, static_cast<size_t>(cursor.cy));
-            // execute(input);
+
+            // TODO: we need to get all content of previous rows and turn them
+            // TODO: into a one string command
+
+            execute();
             break;
 
         case '\r':

@@ -46,6 +46,10 @@ void TFMRenderer::display() {
     Cursor cursor_current = m_cursor.get();
     move(cursor_current.cy, cursor_current.cx);
 
+    buf_clear();
+}
+
+void TFMRenderer::buf_clear() {
     m_abuf.str("");
     m_abuf.clear();
 }

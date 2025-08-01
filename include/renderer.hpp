@@ -36,6 +36,7 @@ class TFMRenderer {
     ~TFMRenderer() = default;
 
     void buf_append(const std::string& data);
+    void buf_clear();
 
     void adjust_scroll();
     void draw();

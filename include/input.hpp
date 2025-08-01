@@ -28,6 +28,7 @@ class TFMInput {
     ~TFMInput() = default;
 
     void remove(std::string& last_row, Cursor& cursor);
+    void execute(const std::string& command);
     void process();
 };
 
