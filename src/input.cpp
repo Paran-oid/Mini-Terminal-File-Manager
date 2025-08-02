@@ -4,14 +4,17 @@
 
 #include <string>
 
-#include "commandline.hpp"
+#include "command_history.hpp"
+#include "command_line.hpp"
 #include "config.hpp"
 #include "core.hpp"
 #include "cursor.hpp"
 #include "rows.hpp"
 
-void TFMInput::remove(std::string& last_row, Cursor& cursor) {
-    if (m_cursor.is_cursor_at_commandline()) {
+void TFMInput::remove_char() {
+    Cursor cursor = m_cursor.get();
+    std::string last_row = m_rows.back();
+    if (m_cursor.is_cursor_at_command_line()) {
         return;
     }
 
@@ -27,8 +30,22 @@ void TFMInput::remove(std::string& last_row, Cursor& cursor) {
 
     m_rows.update(last_row, static_cast<size_t>(cursor.cy));
 }
+std::string TFMInput::extract_command() {
+    size_t current_index = m_command_line.get_row_index();
+    std::ostringstream res_stream;
 
-void TFMInput::execute(const std::string& command) {}
+    res_stream << m_rows.at(current_index++).substr(m_command_line.get_size());
+
+    while (current_index < m_rows.size()) {
+        res_stream << m_rows.at(current_index++);
+    }
+
+    return res_stream.str();
+}
+
+void TFMInput::execute(const std::string& command __attribute__((unused))) {
+    return;
+}
 
 void TFMInput::process() {
     int32_t c = getch();
@@ -37,6 +54,7 @@ void TFMInput::process() {
 
     Cursor cursor = m_cursor.get();
     std::string last_row = m_rows.at(static_cast<size_t>(cursor.cy));
+    std::string command_extracted;
 
     switch (c) {
         case KEY_UP:
@@ -52,10 +70,10 @@ void TFMInput::process() {
             last_row += '\n';
             m_rows.update(last_row, static_cast<size_t>(cursor.cy));
 
-            // TODO: we need to get all content of previous rows and turn them
-            // TODO: into a one string command
+            command_extracted = extract_command();
+            m_command_history.add_previous(command_extracted);
 
-            execute();
+            execute(command_extracted);
             break;
 
         case '\r':
@@ -64,12 +82,12 @@ void TFMInput::process() {
             if (c == KEY_DC) {
                 m_cursor.move(KEY_RIGHT);
             }
-            return remove(last_row, cursor);
+            return remove_char();
 
         case KEY_HOME:
             if (static_cast<size_t>(cursor.cy) ==
-                m_commandline.get_row_index()) {
-                m_cursor.set(static_cast<int32_t>(m_commandline.get_size()),
+                m_command_line.get_row_index()) {
+                m_cursor.set(static_cast<int32_t>(m_command_line.get_size()),
                              cursor.cy);
             } else {
                 m_cursor.set(0, cursor.cy);

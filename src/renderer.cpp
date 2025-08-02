@@ -2,7 +2,7 @@
 
 #include <ncurses.h>
 
-#include "commandline.hpp"
+#include "command_line.hpp"
 #include "config.hpp"
 #include "cursor.hpp"
 #include "path.hpp"
@@ -24,9 +24,9 @@ void TFMRenderer::path_insert() {
     m_cursor.set(static_cast<int32_t>(formatted_curr_path.length()),
                  static_cast<int32_t>(m_rows.size() - 1));
 
-    const Commandline new_commandline = {formatted_curr_path, m_rows.size() - 1,
-                                         formatted_curr_path.size()};
-    m_commandline.set(new_commandline);
+    const command_line new_command_line = {
+        formatted_curr_path, m_rows.size() - 1, formatted_curr_path.size()};
+    m_command_line.set(new_command_line);
 }
 
 void TFMRenderer::display() {

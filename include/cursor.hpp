@@ -3,9 +3,10 @@
 
 #include <cstdint>
 
-class TFMCommandline;
+class TFMCommandLine;
 class TFMRows;
 class TFMScreen;
+class TFMCommandHistory;
 
 struct Cursor {
     int32_t cx, rx, cy;
@@ -15,15 +16,20 @@ class TFMCursor {
    private:
     Cursor m_cursor;
 
-    TFMCommandline& m_commandline;
+    TFMCommandLine& m_command_line;
     TFMRows& m_rows;
     TFMScreen& m_screen;
+    TFMCommandHistory& m_command_history;
 
     // TODO: handle render cursor
 
    public:
-    TFMCursor(TFMCommandline& commandline, TFMRows& rows, TFMScreen& screen)
-        : m_commandline{commandline}, m_rows{rows}, m_screen{screen} {
+    TFMCursor(TFMCommandLine& command_line, TFMRows& rows, TFMScreen& screen,
+              TFMCommandHistory& command_history)
+        : m_command_line{command_line},
+          m_rows{rows},
+          m_screen{screen},
+          m_command_history{command_history} {
         m_cursor = {0, 0, 0};
     }
     ~TFMCursor() = default;
@@ -35,7 +41,7 @@ class TFMCursor {
 
     void move(int32_t direction);
     bool is_cursor_at_last_row();
-    bool is_cursor_at_commandline();
+    bool is_cursor_at_command_line();
 };
 
 #endif

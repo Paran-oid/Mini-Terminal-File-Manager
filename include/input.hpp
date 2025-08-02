@@ -9,26 +9,30 @@ struct Cursor;
 class TFMConfig;
 class TFMCursor;
 class TFMRows;
-class TFMCommandline;
+class TFMCommandLine;
+class TFMCommandHistory;
 
 class TFMInput {
    private:
     TFMConfig& m_conf;
     TFMCursor& m_cursor;
     TFMRows& m_rows;
-    TFMCommandline& m_commandline;
+    TFMCommandLine& m_command_line;
+    TFMCommandHistory& m_command_history;
 
    public:
     TFMInput(TFMConfig& conf, TFMCursor& cursor, TFMRows& rows,
-             TFMCommandline& commandline)
+             TFMCommandLine& command_line, TFMCommandHistory& command_history)
         : m_conf{conf},
           m_cursor{cursor},
           m_rows{rows},
-          m_commandline{commandline} {}
+          m_command_line{command_line},
+          m_command_history{command_history} {}
     ~TFMInput() = default;
 
-    void remove(std::string& last_row, Cursor& cursor);
+    std::string extract_command();
     void execute(const std::string& command);
+    void remove_char();
     void process();
 };
 

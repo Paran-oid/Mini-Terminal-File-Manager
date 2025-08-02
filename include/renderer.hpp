@@ -10,7 +10,7 @@ class TFMCursor;
 class TFMRows;
 class TFMScreen;
 class TFMPathHandler;
-class TFMCommandline;
+class TFMCommandLine;
 
 class TFMRenderer {
    private:
@@ -19,20 +19,20 @@ class TFMRenderer {
     TFMScreen& m_screen;
     TFMPathHandler& m_path;
     TFMCursor& m_cursor;
-    TFMCommandline& m_commandline;
+    TFMCommandLine& m_command_line;
 
     std::ostringstream m_abuf;
 
    public:
     TFMRenderer(TFMConfig& conf, TFMRows& rows, TFMScreen& screen,
                 TFMPathHandler& path, TFMCursor& cursor,
-                TFMCommandline& commandline)
+                TFMCommandLine& command_line)
         : m_conf{conf},
           m_rows{rows},
           m_screen{screen},
           m_path{path},
           m_cursor{cursor},
-          m_commandline{commandline} {}
+          m_command_line{command_line} {}
     ~TFMRenderer() = default;
 
     void buf_append(const std::string& data);

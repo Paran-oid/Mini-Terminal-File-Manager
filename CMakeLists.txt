@@ -31,6 +31,7 @@ set(SRC
 	src/screen.cpp
 	src/rows.cpp
 	src/cursor.cpp
+	src/command_history.cpp
 
 )
 set(include_dir
