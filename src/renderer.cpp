@@ -13,7 +13,7 @@ void TFMRenderer::buf_append(const std::string& str) { m_abuf << str; }
 void TFMRenderer::adjust_scroll() {}
 void TFMRenderer::draw() {
     for (size_t i = 0; i < m_rows.size(); i++) {
-        m_abuf << m_rows.at(i);
+        m_abuf << m_rows.at(i) << "\n";
     }
     m_abuf << '\n';
 }

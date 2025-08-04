@@ -1,5 +1,7 @@
 # TASKS
 
+
+
 ✅ 1. Core File Navigation
 
 Directory tree traversal (recursive and iterative)
@@ -284,3 +286,5 @@ File system	<filesystem> (C++17), boost::filesystem
 Logging	spdlog, loguru
 Testing	Catch2, GoogleTest
 Argument parsing	cxxopts, CLI11
+
+make it return empty if u undo many times and reach end.

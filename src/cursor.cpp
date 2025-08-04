@@ -24,8 +24,12 @@ bool TFMCursor::is_cursor_at_command_line() {
 
 void TFMCursor::move(int32_t direction) {
     Screen screen = m_screen.get();
+
     std::string current_row = m_rows.at(static_cast<size_t>(m_cursor.cy));
-    std::string content;
+    size_t m_command_line_row_index = m_command_line.get_row_index();
+
+    std::vector<std::string> rows_temp;
+    std::pair<size_t, size_t> tracked_data;
 
     switch (direction) {
         case KEY_RIGHT:
@@ -49,22 +53,32 @@ void TFMCursor::move(int32_t direction) {
                 m_cursor.cx = static_cast<int32_t>(current_row.size()) - 1;
             }
             break;
-        // TODO: make this handle previous commands
         case KEY_UP:
-            // TODO: make commands get formatted first into rows and then add
-            // TODO: each of them
-
-            if (!m_command_history.has_previous()) {
-                return;
+        case KEY_DOWN:
+            if (direction == KEY_UP) {
+                if (!m_command_history.has_previous()) {
+                    return;
+                }
+                m_command_history.undo();
+            } else {
+                if (!m_command_history.has_upcoming()) {
+                    return;
+                }
+                m_command_history.redo();
             }
 
-            m_command_history.undo();
+            rows_temp = m_command_history.display_upcoming();
+            if (rows_temp.empty()) {
+                rows_temp = m_command_history.get_last_entry();
+            }
 
-            break;
-        case KEY_DOWN:
-            m_command_history.redo();
-            content = m_command_history.display_previous();
-            m_rows.format_string_to_rows(content);
+            for (size_t i = 0; i < rows_temp.size(); i++) {
+                tracked_data = {rows_temp[i].size(),
+                                i + m_command_line_row_index};
+                m_rows.update(rows_temp[i], tracked_data.second);
+            }
+            this->set(static_cast<int32_t>(tracked_data.first),
+                      static_cast<int32_t>(tracked_data.second));
 
             break;
         default:

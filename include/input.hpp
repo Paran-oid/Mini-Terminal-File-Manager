@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 struct Cursor;
 
@@ -30,7 +31,8 @@ class TFMInput {
           m_command_history{command_history} {}
     ~TFMInput() = default;
 
-    std::string extract_command();
+    std::vector<std::string> extract_current_rows();
+    std::vector<std::string> extract_command();
     void execute(const std::string& command);
     void remove_char();
     void process();

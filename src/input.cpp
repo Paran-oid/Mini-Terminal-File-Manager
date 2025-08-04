@@ -30,17 +30,15 @@ void TFMInput::remove_char() {
 
     m_rows.update(last_row, static_cast<size_t>(cursor.cy));
 }
-std::string TFMInput::extract_command() {
+std::vector<std::string> TFMInput::extract_current_rows() {
+    std::vector<std::string> res;
     size_t current_index = m_command_line.get_row_index();
-    std::ostringstream res_stream;
-
-    res_stream << m_rows.at(current_index++).substr(m_command_line.get_size());
 
     while (current_index < m_rows.size()) {
-        res_stream << m_rows.at(current_index++);
+        res.push_back(m_rows.at(current_index++));
     }
 
-    return res_stream.str();
+    return res;
 }
 
 void TFMInput::execute(const std::string& command __attribute__((unused))) {
@@ -48,13 +46,14 @@ void TFMInput::execute(const std::string& command __attribute__((unused))) {
 }
 
 void TFMInput::process() {
+    m_command_history.set_last_entry(extract_command());
     int32_t c = getch();
 
     if (c == CTRL_KEY('q') || c == CTRL_KEY('Q')) m_conf.end_program();
 
     Cursor cursor = m_cursor.get();
     std::string last_row = m_rows.at(static_cast<size_t>(cursor.cy));
-    std::string command_extracted;
+    std::vector<std::string> extracted_current_rows;
 
     switch (c) {
         case KEY_UP:
@@ -63,17 +62,19 @@ void TFMInput::process() {
         case KEY_RIGHT:
             m_cursor.move(c);
             break;
+
+            // execute current command
         case '\n':
         case KEY_ENTER:
-            // execute current command
+
+            // TODO: make one for extracting just commands and one for saving in
+            // TODO: undo_stack
+            extracted_command = extract_command();
+            m_command_history.add_previous(extracted_command);
+
             m_conf.enable_command();
-            last_row += '\n';
-            m_rows.update(last_row, static_cast<size_t>(cursor.cy));
 
-            command_extracted = extract_command();
-            m_command_history.add_previous(command_extracted);
-
-            execute(command_extracted);
+            // execute(extracted_command);
             break;
 
         case '\r':
@@ -106,6 +107,9 @@ void TFMInput::process() {
 
             last_row += static_cast<char>(c);
             m_rows.update(last_row, static_cast<size_t>(cursor.cy));
+
+            extracted_current_rows = extract_command();
+            m_command_history.set_last_entry(extracted_current_rows);
 
             m_cursor.move(KEY_RIGHT);
             break;
