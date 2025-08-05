@@ -9,7 +9,7 @@ class TFMScreen;
 class TFMCommandHistory;
 
 struct Cursor {
-    int32_t cx, rx, cy;
+    int32_t cx, cy;
 };
 
 class TFMCursor {
@@ -21,8 +21,6 @@ class TFMCursor {
     TFMScreen& m_screen;
     TFMCommandHistory& m_command_history;
 
-    // TODO: handle render cursor
-
    public:
     TFMCursor(TFMCommandLine& command_line, TFMRows& rows, TFMScreen& screen,
               TFMCommandHistory& command_history)
@@ -30,15 +28,14 @@ class TFMCursor {
           m_rows{rows},
           m_screen{screen},
           m_command_history{command_history} {
-        m_cursor = {0, 0, 0};
+        m_cursor = {0, 0};
     }
     ~TFMCursor() = default;
 
     Cursor get() { return m_cursor; }
-    void set(int32_t cx, int32_t cy) { m_cursor = {cx, convert_cx_rx(cx), cy}; }
+    void set(int32_t cx, int32_t cy) { m_cursor = {cx, cy}; }
 
-    int32_t convert_cx_rx(int32_t cx);
-
+	void page_scroll(int32_t direction);
     void move(int32_t direction);
     bool is_cursor_at_last_row();
     bool is_cursor_at_command_line();

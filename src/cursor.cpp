@@ -10,8 +10,6 @@
 #include "rows.hpp"
 #include "screen.hpp"
 
-int32_t TFMCursor::convert_cx_rx(int32_t cx) { return cx; }
-
 bool TFMCursor::is_cursor_at_last_row() {
     return m_cursor.cy == static_cast<int32_t>(m_rows.size()) - 1;
 }
@@ -20,6 +18,23 @@ bool TFMCursor::is_cursor_at_command_line() {
     return static_cast<size_t>(m_cursor.cy) == m_command_line.get_row_index() &&
            static_cast<size_t>(m_cursor.cx) ==
                m_command_line.get_data().length();
+}
+
+void TFMCursor::page_scroll(int32_t direction) {
+    Cursor cursor = this->get();
+    if (direction == KEY_NPAGE) {
+        if (static_cast<size_t>(cursor.cy) < m_rows.size() - 1) {
+            cursor.cy++;
+        }
+    } else if (direction == KEY_PPAGE) {
+        if (cursor.cy > 0) {
+            cursor.cy--;
+        }
+    } else {
+        throw std::invalid_argument("invalid key passed");
+    }
+
+    this->set(cursor.cx, cursor.cy);
 }
 
 void TFMCursor::move(int32_t direction) {

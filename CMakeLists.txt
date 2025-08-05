@@ -23,7 +23,6 @@ set(CMAKE_BUILD_TYPE Debug)
 
 set(SRC 
 	src/main.cpp
-	src/terminal.cpp	
 	src/renderer.cpp
 	src/input.cpp
 	src/core.cpp

@@ -10,7 +10,6 @@
 #include "renderer.hpp"
 #include "rows.hpp"
 #include "screen.hpp"
-#include "terminal.hpp"
 
 class TFMApp {
    private:
@@ -33,7 +32,8 @@ class TFMApp {
           m_path(),
           m_command_history(),
           m_cursor(m_command_line, m_rows, m_screen, m_command_history),
-          m_input(m_conf, m_cursor, m_rows, m_command_line, m_command_history),
+          m_input(m_conf, m_cursor, m_rows, m_command_line, m_command_history,
+                  m_screen),
           m_renderer(m_conf, m_rows, m_screen, m_path, m_cursor,
                      m_command_line) {
         m_conf.enable_command();

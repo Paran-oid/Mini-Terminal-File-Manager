@@ -10,26 +10,8 @@
 #include "core.hpp"
 #include "cursor.hpp"
 #include "rows.hpp"
+#include "screen.hpp"
 
-void TFMInput::remove_char() {
-    Cursor cursor = m_cursor.get();
-    std::string last_row = m_rows.back();
-    if (m_cursor.is_cursor_at_command_line()) {
-        return;
-    }
-
-    if (last_row.empty()) {
-        // TODO: insert logic here
-        m_rows.pop_back();
-        last_row = m_rows.back();
-    } else {
-        last_row.pop_back();
-    }
-
-    m_cursor.move(KEY_LEFT);
-
-    m_rows.update(last_row, static_cast<size_t>(cursor.cy));
-}
 std::vector<std::string> TFMInput::extract_current_rows() {
     std::vector<std::string> res;
     size_t current_index = m_command_line.get_row_index();
@@ -40,22 +22,46 @@ std::vector<std::string> TFMInput::extract_current_rows() {
 
     return res;
 }
+std::string TFMInput::extract_command() { return {}; }
 
 void TFMInput::execute(const std::string& command __attribute__((unused))) {
     return;
 }
 
 void TFMInput::process() {
-    m_command_history.set_last_entry(extract_command());
     int32_t c = getch();
 
     if (c == CTRL_KEY('q') || c == CTRL_KEY('Q')) m_conf.end_program();
 
     Cursor cursor = m_cursor.get();
     std::string last_row = m_rows.at(static_cast<size_t>(cursor.cy));
-    std::vector<std::string> extracted_current_rows;
+
+    std::string command;
+    std::vector<std::string> current_rows;
+
+    int32_t screen_row_off = m_screen.get_row_off();
+    int32_t screen_rows = m_screen.get_rows();
+
+    int32_t times = screen_rows;
 
     switch (c) {
+        case KEY_PPAGE:
+        case KEY_NPAGE:
+            if (c == KEY_PPAGE) {
+                cursor.cy = screen_row_off;
+            } else {
+                cursor.cy = screen_rows + screen_row_off + 1;
+                if (static_cast<size_t>(cursor.cy) > m_rows.size()) {
+                    cursor.cy = static_cast<int32_t>(m_rows.size()) - 1;
+                }
+            }
+
+            while (times--) {
+                m_cursor.page_scroll(c);
+            }
+            m_screen.set_row_off(screen_row_off);
+            break;
+
         case KEY_UP:
         case KEY_DOWN:
         case KEY_LEFT:
@@ -63,18 +69,18 @@ void TFMInput::process() {
             m_cursor.move(c);
             break;
 
-            // execute current command
         case '\n':
         case KEY_ENTER:
-
-            // TODO: make one for extracting just commands and one for saving in
-            // TODO: undo_stack
-            extracted_command = extract_command();
-            m_command_history.add_previous(extracted_command);
+            current_rows = extract_current_rows();
+            command = extract_command();
+            m_command_history.add_previous(current_rows);
 
             m_conf.enable_command();
+            execute(command);
 
-            // execute(extracted_command);
+            last_row += '\n';
+            m_rows.update(last_row, static_cast<size_t>(cursor.cy));
+
             break;
 
         case '\r':
@@ -96,22 +102,54 @@ void TFMInput::process() {
             break;
 
         default:
-            // ctrl key was pressed
             if (c >= 1 && c <= 26) {
+                // ctrl key was pressed
+                break;
             }
 
-            // invalid char
             if (c > 127) {
+                // invalid char
                 break;
             }
 
             last_row += static_cast<char>(c);
             m_rows.update(last_row, static_cast<size_t>(cursor.cy));
 
-            extracted_current_rows = extract_command();
-            m_command_history.set_last_entry(extracted_current_rows);
+            current_rows = extract_current_rows();
+            m_command_history.set_last_entry(current_rows);
 
             m_cursor.move(KEY_RIGHT);
             break;
+    }
+}
+
+void TFMInput::remove_char() {
+    static bool callback = false;
+
+    Cursor cursor = m_cursor.get();
+    std::string last_row = m_rows.back();
+
+    if (m_cursor.is_cursor_at_command_line()) {
+        return;
+    }
+
+    m_cursor.move(KEY_LEFT);
+
+    if (last_row.empty()) {
+        m_rows.pop_back();
+        callback = true;
+        last_row = m_rows.back();
+    } else {
+        last_row.pop_back();
+    }
+
+    cursor = m_cursor.get();
+
+    m_rows.update(last_row, static_cast<size_t>(cursor.cy));
+
+    if (callback) {
+        callback = false;
+        remove_char();
+        m_cursor.move(KEY_RIGHT);
     }
 }

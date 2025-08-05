@@ -7,15 +7,29 @@
 #include "cursor.hpp"
 #include "path.hpp"
 #include "rows.hpp"
+#include "screen.hpp"
 
 void TFMRenderer::buf_append(const std::string& str) { m_abuf << str; }
 
-void TFMRenderer::adjust_scroll() {}
-void TFMRenderer::draw() {
-    for (size_t i = 0; i < m_rows.size(); i++) {
-        m_abuf << m_rows.at(i) << "\n";
+void TFMRenderer::adjust_scroll() {
+    Cursor cursor = m_cursor.get();
+
+    int32_t screen_row_off = m_screen.get_row_off();
+    int32_t screen_rows = m_screen.get_rows();
+
+    if (cursor.cy < screen_row_off) {
+        screen_row_off = cursor.cy;
+    } else if (cursor.cy >= screen_rows + screen_row_off) {
+        screen_row_off = cursor.cy - screen_rows + 1;
     }
-    m_abuf << '\n';
+
+    m_screen.set_row_off(screen_row_off);
+}
+void TFMRenderer::draw() {
+    for (size_t i = static_cast<size_t>(m_screen.get_row_off());
+         i < m_rows.size(); i++) {
+        m_abuf << m_rows.at(i);
+    }
 }
 
 void TFMRenderer::path_insert() {
@@ -30,8 +44,7 @@ void TFMRenderer::path_insert() {
 }
 
 void TFMRenderer::display() {
-    clear();
-    refresh();
+    werase(stdscr);
 
     if (m_conf.is_in_command()) {
         path_insert();
@@ -41,10 +54,14 @@ void TFMRenderer::display() {
     adjust_scroll();
     draw();
 
+    std::string temp = m_abuf.str().c_str();
     printw("%s", m_abuf.str().c_str());
 
     Cursor cursor_current = m_cursor.get();
-    move(cursor_current.cy, cursor_current.cx);
+    if (move(cursor_current.cy - m_screen.get_row_off(), cursor_current.cx) ==
+        -1) {
+        throw std::out_of_range("invalid coordinates for cursor");
+    }
 
     buf_clear();
 }

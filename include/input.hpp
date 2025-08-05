@@ -12,6 +12,7 @@ class TFMCursor;
 class TFMRows;
 class TFMCommandLine;
 class TFMCommandHistory;
+class TFMScreen;
 
 class TFMInput {
    private:
@@ -20,22 +21,26 @@ class TFMInput {
     TFMRows& m_rows;
     TFMCommandLine& m_command_line;
     TFMCommandHistory& m_command_history;
+    TFMScreen& m_screen;
 
    public:
     TFMInput(TFMConfig& conf, TFMCursor& cursor, TFMRows& rows,
-             TFMCommandLine& command_line, TFMCommandHistory& command_history)
+             TFMCommandLine& command_line, TFMCommandHistory& command_history,
+             TFMScreen& screen)
         : m_conf{conf},
           m_cursor{cursor},
           m_rows{rows},
           m_command_line{command_line},
-          m_command_history{command_history} {}
+          m_command_history{command_history},
+          m_screen{screen} {}
     ~TFMInput() = default;
 
     std::vector<std::string> extract_current_rows();
-    std::vector<std::string> extract_command();
+    std::string extract_command();
+
     void execute(const std::string& command);
-    void remove_char();
     void process();
+    void remove_char();
 };
 
 #endif
