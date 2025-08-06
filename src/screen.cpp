@@ -5,17 +5,17 @@
 #include <csignal>
 #include <stdexcept>
 
-TFMScreen* TFMScreen::instance = nullptr;
+TFMScreen* TFMScreen::ms_instance = nullptr;
 
-static void handle_exit(int32_t sig) {
+void TFMScreen::handle_exit(int32_t sig) {
     (void)sig;
     std::exit(0);
 }
 
-static void window_size_update(int32_t sig) {
+void TFMScreen::window_size_update(int32_t sig) {
     (void)sig;
-    if (TFMScreen::instance) {
-        TFMScreen::instance->update_dimensions(sig);
+    if (TFMScreen::ms_instance) {
+        TFMScreen::ms_instance->update_dimensions(sig);
     }
 }
 
@@ -35,7 +35,7 @@ void TFMScreen::terminal_init() {
     keypad(stdscr, TRUE);
     noecho();
 
-    instance = this;
+    ms_instance = this;
 
     // hide cursor
     // curs_set(0);
@@ -43,8 +43,8 @@ void TFMScreen::terminal_init() {
     // don't allow delay for keypresses
     // timeout(0);
 
-    std::signal(SIGINT, handle_exit);
-    std::signal(SIGWINCH, window_size_update);
+    std::signal(SIGINT, ms_instance->handle_exit);
+    std::signal(SIGWINCH, ms_instance->window_size_update);
 }
 
 void TFMScreen::terminal_destroy() {

@@ -12,8 +12,11 @@ class TFMScreen {
    private:
     Screen m_screen;
 
+    static void handle_exit(int32_t sig);
+    static void window_size_update(int32_t sig);
+
    public:
-    static TFMScreen* instance;
+    static TFMScreen* ms_instance;
 
     TFMScreen() : m_screen{0, 0, 0} {
         terminal_init();
@@ -33,9 +36,9 @@ class TFMScreen {
     int32_t get_row_off() const { return m_screen.row_off; }
     void set_row_off(int32_t row_off) { m_screen.row_off = row_off; }
 
-    void terminal_init();
-    void terminal_destroy();
     void update_dimensions(int32_t sig);
+    void terminal_destroy();
+    void terminal_init();
 };
 
 #endif

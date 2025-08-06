@@ -2,8 +2,10 @@
 
 #include <ncurses.h>
 
+#include <sstream>
 #include <string>
 
+#include "command_handler.hpp"
 #include "command_history.hpp"
 #include "command_line.hpp"
 #include "config.hpp"
@@ -22,10 +24,17 @@ std::vector<std::string> TFMInput::extract_current_rows() {
 
     return res;
 }
-std::string TFMInput::extract_command() { return {}; }
+std::string TFMInput::extract_command() {
+    std::ostringstream buf;
+    size_t current_index = m_command_line.get_row_index();
 
-void TFMInput::execute(const std::string& command __attribute__((unused))) {
-    return;
+    buf << m_rows.at(current_index++).substr(m_command_line.get_size());
+
+    while (current_index < m_rows.size()) {
+        buf << m_rows.at(current_index++);
+    }
+
+    return buf.str();
 }
 
 void TFMInput::process() {
@@ -68,7 +77,6 @@ void TFMInput::process() {
         case KEY_RIGHT:
             m_cursor.move(c);
             break;
-
         case '\n':
         case KEY_ENTER:
             current_rows = extract_current_rows();
@@ -76,7 +84,7 @@ void TFMInput::process() {
             m_command_history.add_previous(current_rows);
 
             m_conf.enable_command();
-            execute(command);
+            m_command_handler.process(command);
 
             last_row += '\n';
             m_rows.update(last_row, static_cast<size_t>(cursor.cy));

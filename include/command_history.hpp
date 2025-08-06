@@ -21,6 +21,12 @@ class TFMCommandHistory {
         m_last_entry = last_entry;
     }
 
+    bool has_previous() const { return !m_previous_stack.empty(); }
+    bool has_upcoming() const { return !m_upcoming_stack.empty(); }
+
+    std::vector<std::string> display_previous();
+    std::vector<std::string> display_upcoming();
+
     void add_previous(const std::vector<std::string>& command);
     void add_upcoming(const std::vector<std::string>& command);
 
@@ -30,12 +36,6 @@ class TFMCommandHistory {
     void undo();
     void redo();
     void clear();
-
-    std::vector<std::string> display_previous();
-    std::vector<std::string> display_upcoming();
-
-    bool has_previous() const { return !m_previous_stack.empty(); }
-    bool has_upcoming() const { return !m_upcoming_stack.empty(); }
 };
 
 #endif

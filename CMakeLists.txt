@@ -31,7 +31,7 @@ set(SRC
 	src/rows.cpp
 	src/cursor.cpp
 	src/command_history.cpp
-
+	src/command_handler.cpp
 )
 set(include_dir
 	${CMAKE_SOURCE_DIR}/include)

@@ -3,6 +3,9 @@
 
 #include <cstdint>
 
+#include "rows.hpp"
+#include "command_line.hpp"
+
 class TFMCommandLine;
 class TFMRows;
 class TFMScreen;
@@ -35,10 +38,19 @@ class TFMCursor {
     Cursor get() { return m_cursor; }
     void set(int32_t cx, int32_t cy) { m_cursor = {cx, cy}; }
 
-	void page_scroll(int32_t direction);
+    void page_scroll(int32_t direction);
     void move(int32_t direction);
-    bool is_cursor_at_last_row();
-    bool is_cursor_at_command_line();
+
+    bool is_cursor_at_last_row() {
+        return m_cursor.cy == static_cast<int32_t>(m_rows.size()) - 1;
+    }
+    bool is_cursor_at_command_line() {
+        return static_cast<size_t>(m_cursor.cy) ==
+                   m_command_line.get_row_index() &&
+               static_cast<size_t>(m_cursor.cx) ==
+                   m_command_line.get_data().length();
+        ;
+    }
 };
 
 #endif

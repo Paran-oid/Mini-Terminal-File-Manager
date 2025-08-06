@@ -1,6 +1,7 @@
 #ifndef APP_HPP
 #define APP_HPP
 
+#include "command_handler.hpp"
 #include "command_history.hpp"
 #include "command_line.hpp"
 #include "config.hpp"
@@ -22,6 +23,7 @@ class TFMApp {
     TFMCursor m_cursor;
     TFMInput m_input;
     TFMRenderer m_renderer;
+    TFMCommandHandler m_command_handler;
 
    public:
     TFMApp()
@@ -33,15 +35,15 @@ class TFMApp {
           m_command_history(),
           m_cursor(m_command_line, m_rows, m_screen, m_command_history),
           m_input(m_conf, m_cursor, m_rows, m_command_line, m_command_history,
-                  m_screen),
+                  m_screen, m_command_handler),
           m_renderer(m_conf, m_rows, m_screen, m_path, m_cursor,
                      m_command_line) {
-        m_conf.enable_command();
         m_conf.start_program();
+        m_conf.enable_command();
     }
     ~TFMApp() {
-        m_conf.end_program();
         m_conf.disable_command();
+        m_conf.end_program();
     }
 
     void run();

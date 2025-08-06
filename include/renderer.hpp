@@ -39,9 +39,9 @@ class TFMRenderer {
     void buf_clear();
 
     void adjust_scroll();
-    void draw();
-    void display();
     void path_insert();
+    void display();
+    void draw();
 };
 
 #endif
