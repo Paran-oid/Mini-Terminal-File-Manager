@@ -21,6 +21,7 @@ class TFMRows {
     void update(const std::string& data, size_t at);
     void append(const std::string& data);
     void pop_back();
+    void clear();
 };
 
 #endif

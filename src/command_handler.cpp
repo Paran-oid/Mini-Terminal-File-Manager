@@ -1,11 +1,14 @@
 #include "command_handler.hpp"
 
+#include <algorithm>
+#include <core.hpp>
 #include <cstdlib>
 #include <filesystem>
 #include <sstream>
 
 #include "path.hpp"
 #include "rows.hpp"
+#include "screen.hpp"
 
 namespace fs = std::filesystem;
 
@@ -28,6 +31,12 @@ void TFMCommandHandler::manage_error(const std::vector<std::string>& args,
     message_buf << '\n';
     m_rows.append(message_buf.str());
 }
+
+void TFMCommandHandler::clear_func(const std::vector<std::string>& args) {
+    (void)args;
+    m_rows.clear();
+}
+
 void TFMCommandHandler::cd_func(const std::vector<std::string>& args) {
     if (args.empty()) {
         return;
@@ -38,6 +47,8 @@ void TFMCommandHandler::cd_func(const std::vector<std::string>& args) {
         manage_error(args, UNAVAILABLE_DIRECTORY);
         return;
     }
+
+    // TODO: fix it not being able to enter a directory by name
 
     fs::path path = fs::path(path_str);
     if (path.is_relative()) {
@@ -57,13 +68,43 @@ void TFMCommandHandler::ls_func(const std::vector<std::string>& args) {
     // get all current files/folders
     std::vector<std::string> filenames;
     for (const auto& entry : fs::directory_iterator(m_path.get())) {
-        filenames.push_back(entry.path().filename());
-        fs::path x;
+        filenames.push_back(entry.path().filename().string());
     }
 
     std::sort(filenames.begin(), filenames.end(),
               [](const std::string& a, const std::string& b) { return a < b; });
-    // put all folders/files alphabetically in sorted orders
+
+    // get longest length
+    auto it_max_length =
+        std::max_element(filenames.begin(), filenames.end(),
+                         [](const std::string& a, const std::string& b) {
+                             return a.size() < b.size();
+                         });
+
+    if (it_max_length == filenames.end()) {
+        return;
+    }
+
+    size_t max_length = it_max_length->length();
+
+    size_t cols = static_cast<size_t>(m_screen.get_cols()) / max_length;
+    size_t rows = filenames.size() / cols;
+
+    for (size_t i = 0; i < rows; i++) {
+        std::ostringstream os;
+        for (size_t j = 0; j < cols; j++) {
+            size_t calculated_index = j * rows + i;
+
+            if (calculated_index >= filenames.size()) {
+                continue;
+            }
+
+            std::string filename =
+                ls_format(filenames[calculated_index], max_length);
+            os << filename;
+        }
+        m_rows.append(os.str() + "\n");
+    }
 }
 void TFMCommandHandler::pwd_func(const std::vector<std::string>& args) {
     (void)args;
@@ -79,6 +120,11 @@ void TFMCommandHandler::match_table_init() {
     };
     match_table["pwd"] = [this](const std::vector<std::string>& args) {
         this->pwd_func(args);
+    };
+
+    // TODO: fix me
+    match_table["clear"] = [this](const std::vector<std::string>& args) {
+        this->clear_func(args);
     };
 }
 

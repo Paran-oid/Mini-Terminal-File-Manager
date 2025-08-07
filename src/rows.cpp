@@ -30,3 +30,7 @@ std::string TFMRows::front() { return m_rows.front(); }
 std::string TFMRows::back() { return m_rows.back(); }
 
 size_t TFMRows::size() const { return m_rows.size(); }
+
+void TFMRows::clear() {
+	m_rows.clear();
+}
