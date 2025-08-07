@@ -1,21 +1,109 @@
 #include "command_handler.hpp"
 
-void TFMCommandHandler::process(const std::string& command) {
-    std::vector<std::string> args = this->parse(command);
+#include <cstdlib>
+#include <filesystem>
+#include <sstream>
 
-    if (args.empty()) {
-        // *display that no command was found
-    }
+#include "path.hpp"
+#include "rows.hpp"
 
-    switch (args[0]) {
-        case "cd":
-            navigate(args);
+namespace fs = std::filesystem;
+
+void TFMCommandHandler::manage_error(const std::vector<std::string>& args,
+                                     TFMCommandErrorCode code) {
+    (void)args;
+    std::ostringstream message_buf;
+    switch (code) {
+        case INVALID:
+            message_buf << args[0] << ": command not found";
             break;
-        case "ls":
-            list(args);
+        case UNAVAILABLE_DIRECTORY:
+            message_buf << args[0] << ": " << args[1]
+                        << ": no such file or directory";
             break;
         default:
-            // *display that no command was found
             break;
+    }
+
+    message_buf << '\n';
+    m_rows.append(message_buf.str());
+}
+void TFMCommandHandler::cd_func(const std::vector<std::string>& args) {
+    if (args.empty()) {
+        return;
+    }
+
+    std::string path_str = args[1];
+    if (!fs::exists(path_str)) {
+        manage_error(args, UNAVAILABLE_DIRECTORY);
+        return;
+    }
+
+    fs::path path = fs::path(path_str);
+    if (path.is_relative()) {
+        // expands to absolute path
+        path = fs::canonical(path);
+    } else if (path == "-") {
+        // TODO: to implement
+    } else if (path_str.contains("~")) {
+        // TODO: to implement
+    }
+    path_str = path.string();
+    m_path.set(path);
+}
+
+void TFMCommandHandler::ls_func(const std::vector<std::string>& args) {
+    (void)args;
+    // get all current files/folders
+    std::vector<std::string> filenames;
+    for (const auto& entry : fs::directory_iterator(m_path.get())) {
+        filenames.push_back(entry.path().filename());
+        fs::path x;
+    }
+
+    std::sort(filenames.begin(), filenames.end(),
+              [](const std::string& a, const std::string& b) { return a < b; });
+    // put all folders/files alphabetically in sorted orders
+}
+void TFMCommandHandler::pwd_func(const std::vector<std::string>& args) {
+    (void)args;
+    m_rows.append(m_path.get().string() + '\n');
+}
+
+void TFMCommandHandler::match_table_init() {
+    match_table["cd"] = [this](const std::vector<std::string>& args) {
+        this->cd_func(args);
+    };
+    match_table["ls"] = [this](const std::vector<std::string>& args) {
+        this->ls_func(args);
+    };
+    match_table["pwd"] = [this](const std::vector<std::string>& args) {
+        this->pwd_func(args);
+    };
+}
+
+std::vector<std::string> TFMCommandHandler::parse(const std::string& command) {
+    std::vector<std::string> res;
+
+    std::istringstream iss(command);
+    std::string buf;
+    while (iss >> buf) {
+        res.push_back(buf);
+    }
+
+    return res;
+}
+
+void TFMCommandHandler::process(const std::string& command) {
+    if (command.empty()) {
+        return;
+    }
+
+    m_args = this->parse(command);
+
+    if (m_args.empty() || !match_table.contains(m_args[0])) {
+        manage_error(m_args, INVALID);
+    } else {
+        match_table[m_args[0]](m_args);
     }
 }

@@ -3,16 +3,18 @@
 
 #include <filesystem>
 
+namespace fs = std::filesystem;
+
 class TFMPathHandler {
    private:
-    std::filesystem::path m_path;
+    fs::path m_path;
 
    public:
-    TFMPathHandler() : m_path{std::filesystem::current_path()} {}
+    TFMPathHandler() : m_path{fs::current_path()} {}
     ~TFMPathHandler() = default;
 
-    std::filesystem::path get() const { return m_path; }
-    void set(const std::filesystem::path& path) { m_path = path; }
+    fs::path get() const { return m_path; }
+    void set(const fs::path& path) { m_path = path; }
 };
 
 #endif

@@ -4,17 +4,17 @@
 
 ✅ 1. Core File Navigation
 
-Directory tree traversal (recursive and iterative)
+~~Directory tree traversal (recursive and iterative)~~
 
 View contents of current directory
 
 Show hidden files (.dotfiles)
 
-Change current directory (cd)
+~~Change current directory (cd)~~
 
-Go up one directory (..)
+~~Go up one directory (..)~~
 
-Absolute and relative path handling
+~~Absolute and relative path handling~~
 
 Auto-expand symlinks
 
