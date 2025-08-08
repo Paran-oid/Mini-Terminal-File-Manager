@@ -1,14 +1,12 @@
 # TASKS
 
-
+***TODO: Show hidden files (.dotfiles)***
 
 ✅ 1. Core File Navigation
 
 ~~Directory tree traversal (recursive and iterative)~~
 
-View contents of current directory
-
-Show hidden files (.dotfiles)
+~~View contents of current directory~~
 
 ~~Change current directory (cd)~~
 
@@ -16,9 +14,9 @@ Show hidden files (.dotfiles)
 
 ~~Absolute and relative path handling~~
 
-Auto-expand symlinks
+~~Auto-expand symlinks~~
 
-    Display breadcrumb (e.g., /home/aziz/Documents/Projects)
+~~Display breadcrumb (e.g., /home/aziz/Documents/Projects)~~
 
 📄 2. File Operations
 

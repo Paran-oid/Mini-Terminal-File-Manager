@@ -26,16 +26,16 @@ set(SRC
 	src/renderer.cpp
 	src/input.cpp
 	src/core.cpp
-	src/app.cpp
 	src/screen.cpp
 	src/rows.cpp
 	src/cursor.cpp
 	src/path.cpp
-	src/command_history.cpp
-	src/command_handler.cpp
+	src/commands/command_history.cpp
+	src/commands/command_handler.cpp
 )
 set(include_dir
-	${CMAKE_SOURCE_DIR}/include)
+	${CMAKE_SOURCE_DIR}/include
+	${CMAKE_SOURCE_DIR}/include/commands)
 
 # executables and including files and packages
 

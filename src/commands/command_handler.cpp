@@ -40,34 +40,49 @@ void TFMCommandHandler::clear_func(const std::vector<std::string>& args) {
 }
 
 void TFMCommandHandler::cd_func(const std::vector<std::string>& args) {
-    if (args.empty()) {
+    if (args.empty() || args.size() < 2) {
         return;
     }
 
     std::string path_str = args[1];
     m_path.expand(path_str);
 
-    if (!fs::exists(path_str) && path_str != "-") {
+    if (path_str == "-") {
+        auto temp = m_path.get_path();
+        path_str = m_path.get_previous_path().string();
+        m_path.set_previous_path(temp);
+    }
+
+    fs::path target_path(path_str);
+
+    if (!fs::exists(target_path)) {
         manage_error(args, UNAVAILABLE_DIRECTORY);
         return;
     }
 
-    fs::path path = fs::path(path_str);
-    if (path == "-") {
-        auto temp = m_path.get_path();
-        path = m_path.get_previous_path();
-        m_path.set_previous_path(temp);
-    } else if (path.is_relative()) {
-        m_path.set_previous_path(m_path.get_path());
-        // expands to absolute path
-        path = fs::canonical(path);
+    try {
+        // handles symlinks and relative paths
+        target_path = fs::canonical(target_path);
+    } catch (const fs::filesystem_error& e) {
+        manage_error(args, UNAVAILABLE_DIRECTORY);
+        return;
     }
 
-    m_path.set_path(path);
+    m_path.set_previous_path(m_path.get_path());
+    m_path.set_path(target_path);
 }
 
 void TFMCommandHandler::ls_func(const std::vector<std::string>& args) {
     (void)args;
+
+    // TODO: make a ls_analyze funciton to analyze for flags
+    /*
+            *	make enum for the flags (ask chatgpt to show you all for ls)
+            *	ls_analyze returns num that has flags set
+            *	ls_func handles them accordingly
+
+    */
+
     // get all current files/folders
     std::vector<std::string> filenames;
     for (const auto& entry : fs::directory_iterator(m_path.get_path())) {
@@ -111,6 +126,7 @@ void TFMCommandHandler::ls_func(const std::vector<std::string>& args) {
         os.clear();
     }
 }
+
 void TFMCommandHandler::pwd_func(const std::vector<std::string>& args) {
     (void)args;
     m_rows.append(m_path.get_path().string() + '\n');

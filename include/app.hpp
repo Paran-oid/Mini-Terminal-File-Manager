@@ -48,7 +48,16 @@ class TFMApp {
         m_conf.end_program();
     }
 
-    void run();
+    void run() {
+        m_screen.terminal_init();
+
+        while (m_conf.is_program_running()) {
+            m_renderer.display();
+            m_input.process();
+        }
+
+        m_screen.terminal_destroy();
+    }
 };
 
 #endif
