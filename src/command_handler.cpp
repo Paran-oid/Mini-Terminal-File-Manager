@@ -1,6 +1,7 @@
 #include "command_handler.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <core.hpp>
 #include <cstdlib>
 #include <filesystem>
@@ -42,6 +43,7 @@ void TFMCommandHandler::cd_func(const std::vector<std::string>& args) {
         return;
     }
 
+    // TODO: check if it is a file in current directory
     std::string path_str = args[1];
     if (!fs::exists(path_str)) {
         manage_error(args, UNAVAILABLE_DIRECTORY);
@@ -88,7 +90,8 @@ void TFMCommandHandler::ls_func(const std::vector<std::string>& args) {
     size_t max_length = it_max_length->length();
 
     size_t cols = static_cast<size_t>(m_screen.get_cols()) / max_length;
-    size_t rows = filenames.size() / cols;
+    size_t rows = static_cast<size_t>(
+        std::ceil(static_cast<double>(filenames.size()) / static_cast<double>(cols)));
 
     for (size_t i = 0; i < rows; i++) {
         std::ostringstream os;
@@ -104,6 +107,7 @@ void TFMCommandHandler::ls_func(const std::vector<std::string>& args) {
             os << filename;
         }
         m_rows.append(os.str() + "\n");
+        os.clear();
     }
 }
 void TFMCommandHandler::pwd_func(const std::vector<std::string>& args) {
@@ -122,7 +126,6 @@ void TFMCommandHandler::match_table_init() {
         this->pwd_func(args);
     };
 
-    // TODO: fix me
     match_table["clear"] = [this](const std::vector<std::string>& args) {
         this->clear_func(args);
     };

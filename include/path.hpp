@@ -14,7 +14,7 @@ class TFMPathHandler {
     ~TFMPathHandler() = default;
 
     fs::path get() const { return m_path; }
-    void set(const fs::path& path) { m_path = path; }
+    void set(const fs::path& path);
 };
 
 #endif

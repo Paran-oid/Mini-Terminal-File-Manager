@@ -53,6 +53,8 @@ void TFMInput::process() {
 
     int32_t times = screen_rows;
 
+    // TODO: make tab find most matching path with what u entered
+	
     switch (c) {
         case KEY_PPAGE:
         case KEY_NPAGE:
@@ -83,11 +85,11 @@ void TFMInput::process() {
             command = extract_command();
             m_command_history.add_previous(current_rows);
 
-            m_conf.enable_command();
-            m_command_handler.process(command);
-
             last_row += '\n';
             m_rows.update(last_row, static_cast<size_t>(cursor.cy));
+
+            m_conf.enable_command();
+            m_command_handler.process(command);
 
             break;
 
