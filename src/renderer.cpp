@@ -33,7 +33,7 @@ void TFMRenderer::draw() {
 }
 
 void TFMRenderer::path_insert() {
-    std::string formatted_curr_path = m_path.get().string() + ":~$ ";
+    std::string formatted_curr_path = m_path.get_path().string() + ":~$ ";
     m_rows.append(formatted_curr_path);
     m_cursor.set(static_cast<int32_t>(formatted_curr_path.length()),
                  static_cast<int32_t>(m_rows.size() - 1));

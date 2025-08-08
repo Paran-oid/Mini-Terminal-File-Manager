@@ -33,7 +33,7 @@ class TFMApp {
           m_screen{},
           m_path{},
           m_command_history{},
-          m_command_handler{m_path, m_rows, m_screen},
+          m_command_handler{m_path, m_rows, m_screen, m_conf},
           m_cursor{m_command_line, m_rows, m_screen, m_command_history},
           m_input{m_conf,           m_cursor,          m_rows,
                   m_command_line,   m_command_history, m_screen,
