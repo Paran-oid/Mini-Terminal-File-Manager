@@ -163,6 +163,7 @@ void TFMInput::match() {
     }
 
     match = m_path.get_path().string() + ":~$ " + match;
+    // TODO: fix the logic here
     m_rows.append(match);
 }
 
