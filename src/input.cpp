@@ -11,6 +11,7 @@
 #include "config.hpp"
 #include "core.hpp"
 #include "cursor.hpp"
+#include "path.hpp"
 #include "rows.hpp"
 #include "screen.hpp"
 
@@ -43,19 +44,20 @@ void TFMInput::process() {
     if (c == CTRL_KEY('q') || c == CTRL_KEY('Q')) m_conf.end_program();
 
     Cursor cursor = m_cursor.get();
-    std::string last_row = m_rows.at(static_cast<size_t>(cursor.cy));
-
-    std::string command;
-    std::vector<std::string> current_rows;
 
     int32_t screen_row_off = m_screen.get_row_off();
     int32_t screen_rows = m_screen.get_rows();
 
     int32_t times = screen_rows;
 
-    // TODO: make tab find most matching path with what u entered
-	
+    // TODO: make it show all matches if tab was clicked twice (used timeout)
+
     switch (c) {
+        case KEY_BTAB:
+        case '\t':
+            this->match();
+            break;
+
         case KEY_PPAGE:
         case KEY_NPAGE:
             if (c == KEY_PPAGE) {
@@ -79,18 +81,10 @@ void TFMInput::process() {
         case KEY_RIGHT:
             m_cursor.move(c);
             break;
+
         case '\n':
         case KEY_ENTER:
-            current_rows = extract_current_rows();
-            command = extract_command();
-            m_command_history.add_previous(current_rows);
-
-            last_row += '\n';
-            m_rows.update(last_row, static_cast<size_t>(cursor.cy));
-
-            m_conf.enable_command();
-            m_command_handler.process(command);
-
+            this->enter();
             break;
 
         case '\r':
@@ -122,15 +116,54 @@ void TFMInput::process() {
                 break;
             }
 
-            last_row += static_cast<char>(c);
-            m_rows.update(last_row, static_cast<size_t>(cursor.cy));
-
-            current_rows = extract_current_rows();
-            m_command_history.set_last_entry(current_rows);
-
-            m_cursor.move(KEY_RIGHT);
+            this->append_char(c);
             break;
     }
+}
+
+void TFMInput::enter() {
+    std::string last_row = m_rows.back();
+    Cursor cursor = m_cursor.get();
+
+    auto current_rows = extract_current_rows();
+    std::string command = extract_command();
+
+    m_command_history.add_previous(current_rows);
+    m_rows.update(last_row, static_cast<size_t>(cursor.cy));
+
+    m_conf.enable_command();
+    m_command_handler.process(command);
+}
+
+void TFMInput::append_char(int32_t c) {
+    Cursor cursor = m_cursor.get();
+
+    auto current_rows = extract_current_rows();
+    std::string command = extract_command();
+
+    std::string last_row = m_rows.back() + static_cast<char>(c);
+
+    m_rows.update(last_row, static_cast<size_t>(cursor.cy));
+    m_cursor.move(KEY_RIGHT);
+
+    current_rows = extract_current_rows();
+    m_command_history.set_last_entry(current_rows);
+}
+
+void TFMInput::match() {
+    std::string cmd = extract_command();
+    if (cmd.empty()) {
+        return;
+    }
+
+    std::string match = m_path.find_best_match(cmd);
+
+    if (match == cmd) {
+        return;
+    }
+
+    match = m_path.get_path().string() + ":~$ " + match;
+    m_rows.append(match);
 }
 
 void TFMInput::remove_char() {

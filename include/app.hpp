@@ -16,10 +16,10 @@ class TFMApp {
    private:
     TFMConfig m_conf;
     TFMCommandLine m_command_line;
-    TFMRows m_rows;
     TFMScreen m_screen;
     TFMPathHandler m_path;
     TFMCommandHistory m_command_history;
+    TFMRows m_rows;
     TFMCommandHandler m_command_handler;
     TFMCursor m_cursor;
     TFMInput m_input;
@@ -29,15 +29,20 @@ class TFMApp {
     TFMApp()
         : m_conf{},
           m_command_line{},
-          m_rows{},
           m_screen{},
           m_path{},
           m_command_history{},
+          m_rows{m_screen},
           m_command_handler{m_path, m_rows, m_screen, m_conf},
           m_cursor{m_command_line, m_rows, m_screen, m_command_history},
-          m_input{m_conf,           m_cursor,          m_rows,
-                  m_command_line,   m_command_history, m_screen,
-                  m_command_handler},
+          m_input{m_conf,
+                  m_cursor,
+                  m_rows,
+                  m_command_line,
+                  m_command_history,
+                  m_screen,
+                  m_command_handler,
+                  m_path},
           m_renderer{m_conf, m_rows,   m_screen,
                      m_path, m_cursor, m_command_line} {
         m_conf.start_program();

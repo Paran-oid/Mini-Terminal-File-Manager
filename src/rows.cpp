@@ -1,36 +1,47 @@
 #include "rows.hpp"
 
+#include <cmath>
 #include <stdexcept>
+
+#include "screen.hpp"
 
 void TFMRows::append(const std::string& data) {
     if (data.empty()) {
-        std::invalid_argument("TFMRows: empty data passed in parameters");
+        m_app_rows.push_back("");
+        return;
     }
 
-    m_rows.push_back(data);
+    size_t cols = static_cast<size_t>(m_screen.get_cols());
+    size_t rows = static_cast<size_t>(std::ceil(
+        (static_cast<float>(data.size()) / static_cast<float>(cols))));
+
+    size_t from = 0;
+    for (size_t i = 0; i < rows; i++) {
+        m_app_rows.push_back(data.substr(from, cols));
+        from += cols;
+    }
 }
 
 void TFMRows::update(const std::string& data, size_t at) {
-    if (at >= m_rows.size()) {
+    if (at >= m_app_rows.size()) {
         throw std::out_of_range("TFMRows: passed an invalid 'at' paramter");
     }
 
-    m_rows[at] = data;
+    m_app_rows[at] = data;
 }
-void TFMRows::pop_back() { m_rows.pop_back(); }
+
+void TFMRows::pop_back() { m_app_rows.pop_back(); }
 
 std::string TFMRows::at(size_t at) const {
-    if (at >= m_rows.size()) {
+    if (at >= m_app_rows.size()) {
         throw std::out_of_range("TFMRows: passed an invalid 'at' paramter");
     }
-    return m_rows[at];
+    return m_app_rows[at];
 }
 
-std::string TFMRows::front() { return m_rows.front(); }
-std::string TFMRows::back() { return m_rows.back(); }
+std::string TFMRows::front() { return m_app_rows.front(); }
+std::string TFMRows::back() { return m_app_rows.back(); }
 
-size_t TFMRows::size() const { return m_rows.size(); }
+size_t TFMRows::size() const { return m_app_rows.size(); }
 
-void TFMRows::clear() {
-	m_rows.clear();
-}
+void TFMRows::clear() { m_app_rows.clear(); }

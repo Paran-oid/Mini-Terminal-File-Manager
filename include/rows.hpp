@@ -5,12 +5,16 @@
 #include <string>
 #include <vector>
 
+class TFMScreen;
+
 class TFMRows {
    private:
-    std::vector<std::string> m_rows;
+    TFMScreen& m_screen;
+
+    std::vector<std::string> m_app_rows;
 
    public:
-    TFMRows() = default;
+    TFMRows(TFMScreen& screen) : m_screen{screen} {};
     ~TFMRows() = default;
 
     std::string at(size_t at) const;
@@ -18,9 +22,9 @@ class TFMRows {
     std::string back();
     size_t size() const;
 
+    void pop_back();
     void update(const std::string& data, size_t at);
     void append(const std::string& data);
-    void pop_back();
     void clear();
 };
 

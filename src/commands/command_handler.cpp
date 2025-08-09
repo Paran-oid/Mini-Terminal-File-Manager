@@ -30,7 +30,6 @@ void TFMCommandHandler::manage_error(const std::vector<std::string>& args,
             break;
     }
 
-    message_buf << '\n';
     m_rows.append(message_buf.str());
 }
 
@@ -75,7 +74,8 @@ void TFMCommandHandler::cd_func(const std::vector<std::string>& args) {
 void TFMCommandHandler::ls_func(const std::vector<std::string>& args) {
     (void)args;
 
-    // TODO: make a ls_analyze funciton to analyze for flags
+    // TODO:
+    // make a ls_analyze funciton to analyze for flags
     /*
             *	make enum for the flags (ask chatgpt to show you all for ls)
             *	ls_analyze returns num that has flags set
@@ -129,7 +129,7 @@ void TFMCommandHandler::ls_func(const std::vector<std::string>& args) {
 
 void TFMCommandHandler::pwd_func(const std::vector<std::string>& args) {
     (void)args;
-    m_rows.append(m_path.get_path().string() + '\n');
+    m_rows.append(m_path.get_path().string());
 }
 
 void TFMCommandHandler::whoami_func(const std::vector<std::string>& args) {

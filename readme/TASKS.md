@@ -1,6 +1,7 @@
 # TASKS
 
 ***TODO: Show hidden files (.dotfiles)***
+***TODO: write documentation***
 
 ✅ 1. Core File Navigation
 
