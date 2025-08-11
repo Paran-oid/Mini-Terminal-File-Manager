@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <string>
 
-struct command_line {
+struct TFMCommandLineDetails {
     std::string data;
     size_t row_index;
     size_t size;
@@ -12,14 +12,14 @@ struct command_line {
 
 class TFMCommandLine {
    private:
-    command_line m_command_line;
+    TFMCommandLineDetails m_command_line;
 
    public:
     TFMCommandLine() = default;
     ~TFMCommandLine() = default;
 
-    command_line get() const { return m_command_line; }
-    void set(const command_line& command_line) {
+    TFMCommandLineDetails get() const { return m_command_line; }
+    void set(const TFMCommandLineDetails& command_line) {
         m_command_line = command_line;
     }
 

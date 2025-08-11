@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-struct Cursor;
+struct TFMCursorCords;
 
 class TFMConfig;
 class TFMCursor;
@@ -18,7 +18,7 @@ class TFMPathHandler;
 
 class TFMInput {
    private:
-    TFMConfig& m_conf;
+    TFMConfig& m_config;
     TFMCursor& m_cursor;
     TFMRows& m_rows;
     TFMCommandLine& m_command_line;
@@ -28,11 +28,11 @@ class TFMInput {
     TFMPathHandler& m_path;
 
    public:
-    TFMInput(TFMConfig& conf, TFMCursor& cursor, TFMRows& rows,
+    TFMInput(TFMConfig& config, TFMCursor& cursor, TFMRows& rows,
              TFMCommandLine& command_line, TFMCommandHistory& command_history,
              TFMScreen& screen, TFMCommandHandler& command_handler,
              TFMPathHandler& path)
-        : m_conf{conf},
+        : m_config{config},
           m_cursor{cursor},
           m_rows{rows},
           m_command_line{command_line},
@@ -43,7 +43,7 @@ class TFMInput {
     ~TFMInput() = default;
 
     std::vector<std::string> extract_current_rows();
-    std::string extract_command();
+    std::string extract_input_buf();
 
     void append_char(int32_t c);
     void remove_char();

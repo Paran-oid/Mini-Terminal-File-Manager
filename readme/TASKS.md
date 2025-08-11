@@ -2,6 +2,7 @@
 
 ***TODO: Show hidden files (.dotfiles)***
 ***TODO: write documentation***
+***TODO: Order functions in cpp files like they are in their headers***
 
 ✅ 1. Core File Navigation
 

@@ -30,6 +30,22 @@ void TFMRows::update(const std::string& data, size_t at) {
     m_app_rows[at] = data;
 }
 
+void TFMRows::remove_from(size_t at) {
+    if (at >= m_app_rows.size()) {
+        throw std::out_of_range("TFMRows: passed an invalid 'at' paramter");
+    }
+
+    m_app_rows.erase(m_app_rows.begin() + static_cast<diff_t>(at),
+                     m_app_rows.end());
+}
+void TFMRows::remove(size_t at) {
+    if (at >= m_app_rows.size()) {
+        throw std::out_of_range("TFMRows: passed an invalid 'at' paramter");
+    }
+
+    m_app_rows.erase(m_app_rows.begin() + static_cast<diff_t>(at));
+}
+
 void TFMRows::pop_back() { m_app_rows.pop_back(); }
 
 std::string TFMRows::at(size_t at) const {

@@ -3,14 +3,14 @@
 
 #include <cstdint>
 
-struct Screen {
+struct TFMScreenDetails {
     int32_t rows, cols;
     int32_t row_off;
 };
 
 class TFMScreen {
    private:
-    Screen m_screen;
+    TFMScreenDetails m_screen;
 
     static void handle_exit(int32_t sig);
     static void window_size_update(int32_t sig);
@@ -24,8 +24,8 @@ class TFMScreen {
     }
     ~TFMScreen() { terminal_destroy(); };
 
-    Screen get() const { return m_screen; }
-    void set(const Screen& new_screen) { m_screen = new_screen; }
+    TFMScreenDetails get() const { return m_screen; }
+    void set(const TFMScreenDetails& new_screen) { m_screen = new_screen; }
 
     int32_t get_rows() const { return m_screen.rows; }
     void set_rows(int32_t rows) { m_screen.rows = rows; }

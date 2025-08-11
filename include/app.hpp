@@ -14,7 +14,7 @@
 
 class TFMApp {
    private:
-    TFMConfig m_conf;
+    TFMConfig m_config;
     TFMCommandLine m_command_line;
     TFMScreen m_screen;
     TFMPathHandler m_path;
@@ -27,15 +27,15 @@ class TFMApp {
 
    public:
     TFMApp()
-        : m_conf{},
+        : m_config{},
           m_command_line{},
           m_screen{},
           m_path{},
           m_command_history{},
           m_rows{m_screen},
-          m_command_handler{m_path, m_rows, m_screen, m_conf},
+          m_command_handler{m_path, m_rows, m_screen, m_config},
           m_cursor{m_command_line, m_rows, m_screen, m_command_history},
-          m_input{m_conf,
+          m_input{m_config,
                   m_cursor,
                   m_rows,
                   m_command_line,
@@ -43,20 +43,20 @@ class TFMApp {
                   m_screen,
                   m_command_handler,
                   m_path},
-          m_renderer{m_conf, m_rows,   m_screen,
-                     m_path, m_cursor, m_command_line} {
-        m_conf.start_program();
-        m_conf.enable_command();
+          m_renderer{m_config, m_rows,   m_screen,
+                     m_path,   m_cursor, m_command_line} {
+        m_config.start_program();
+        m_config.enable_command();
     }
     ~TFMApp() {
-        m_conf.disable_command();
-        m_conf.end_program();
+        m_config.disable_command();
+        m_config.end_program();
     }
 
     void run() {
         m_screen.terminal_init();
 
-        while (m_conf.is_program_running()) {
+        while (m_config.is_program_running()) {
             m_renderer.display();
             m_input.process();
         }

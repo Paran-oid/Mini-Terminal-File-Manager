@@ -14,171 +14,21 @@
 
 namespace fs = std::filesystem;
 
-void TFMCommandHandler::manage_error(const std::vector<std::string>& args,
-                                     TFMCommandErrorCode code) {
-    (void)args;
-    std::ostringstream message_buf;
-    switch (code) {
-        case INVALID:
-            message_buf << args[0] << ": command not found";
-            break;
-        case UNAVAILABLE_DIRECTORY:
-            message_buf << args[0] << ": " << args[1]
-                        << ": no such file or directory";
-            break;
-        default:
-            break;
-    }
-
-    m_rows.append(message_buf.str());
-}
-
-void TFMCommandHandler::clear_func(const std::vector<std::string>& args) {
-    (void)args;
-    m_rows.clear();
-}
-
-void TFMCommandHandler::cd_func(const std::vector<std::string>& args) {
-    if (args.empty() || args.size() < 2) {
+void TFMCommandHandler::process(const std::string& input) {
+    if (input.empty()) {
         return;
     }
 
-    std::string path_str = args[1];
-    m_path.expand(path_str);
+    TFMCommand command = m_parser.parse(input);
 
-    if (path_str == "-") {
-        auto temp = m_path.get_path();
-        path_str = m_path.get_previous_path().string();
-        m_path.set_previous_path(temp);
-    }
-
-    fs::path target_path(path_str);
-
-    if (!fs::exists(target_path)) {
-        manage_error(args, UNAVAILABLE_DIRECTORY);
-        return;
-    }
-
-    try {
-        // handles symlinks and relative paths
-        target_path = fs::canonical(target_path);
-    } catch (const fs::filesystem_error& e) {
-        manage_error(args, UNAVAILABLE_DIRECTORY);
-        return;
-    }
-
-    m_path.set_previous_path(m_path.get_path());
-    m_path.set_path(target_path);
-}
-
-void TFMCommandHandler::ls_func(const std::vector<std::string>& args) {
-    (void)args;
-
-    // TODO:
-    // make a ls_analyze funciton to analyze for flags
-    /*
-            *	make enum for the flags (ask chatgpt to show you all for ls)
-            *	ls_analyze returns num that has flags set
-            *	ls_func handles them accordingly
-
-    */
-
-    // get all current files/folders
-    std::vector<std::string> filenames;
-    for (const auto& entry : fs::directory_iterator(m_path.get_path())) {
-        filenames.push_back(entry.path().filename().string());
-    }
-
-    std::sort(filenames.begin(), filenames.end(),
-              [](const std::string& a, const std::string& b) { return a < b; });
-
-    // get longest length
-    auto it_max_length =
-        std::max_element(filenames.begin(), filenames.end(),
-                         [](const std::string& a, const std::string& b) {
-                             return a.size() < b.size();
-                         });
-
-    if (it_max_length == filenames.end()) {
-        return;
-    }
-
-    size_t max_length = it_max_length->length();
-
-    size_t cols = static_cast<size_t>(m_screen.get_cols()) / max_length;
-    size_t rows = static_cast<size_t>(std::ceil(
-        static_cast<double>(filenames.size()) / static_cast<double>(cols)));
-
-    for (size_t i = 0; i < rows; i++) {
-        std::ostringstream os;
-        for (size_t j = 0; j < cols; j++) {
-            size_t calculated_index = j * rows + i;
-
-            if (calculated_index >= filenames.size()) {
-                continue;
-            }
-
-            std::string filename =
-                ls_format(filenames[calculated_index], max_length);
-            os << filename;
-        }
-        m_rows.append(os.str() + "\n");
-        os.clear();
-    }
-}
-
-void TFMCommandHandler::pwd_func(const std::vector<std::string>& args) {
-    (void)args;
-    m_rows.append(m_path.get_path().string());
-}
-
-void TFMCommandHandler::whoami_func(const std::vector<std::string>& args) {
-    (void)args;
-    m_rows.append(m_conf.get_username() + "\n");
-}
-
-void TFMCommandHandler::match_table_init() {
-    match_table["cd"] = [this](const std::vector<std::string>& args) {
-        this->cd_func(args);
-    };
-    match_table["ls"] = [this](const std::vector<std::string>& args) {
-        this->ls_func(args);
-    };
-    match_table["pwd"] = [this](const std::vector<std::string>& args) {
-        this->pwd_func(args);
-    };
-
-    match_table["clear"] = [this](const std::vector<std::string>& args) {
-        this->clear_func(args);
-    };
-
-    match_table["whoami"] = [this](const std::vector<std::string>& args) {
-        this->whoami_func(args);
-    };
-}
-
-std::vector<std::string> TFMCommandHandler::parse(const std::string& command) {
-    std::vector<std::string> res;
-
-    std::istringstream iss(command);
-    std::string buf;
-    while (iss >> buf) {
-        res.push_back(buf);
-    }
-
-    return res;
-}
-
-void TFMCommandHandler::process(const std::string& command) {
     if (command.empty()) {
         return;
     }
 
-    m_args = this->parse(command);
-
-    if (m_args.empty() || !match_table.contains(m_args[0])) {
-        manage_error(m_args, INVALID);
+    auto it = m_mapper.find(command.name);
+    if (it != m_mapper.end()) {
+        it->second(command);
     } else {
-        match_table[m_args[0]](m_args);
+        m_executor.manage_error(command, INVALID);
     }
 }

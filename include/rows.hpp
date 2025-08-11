@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+using diff_t = std::vector<std::string>::difference_type;
+
 class TFMScreen;
 
 class TFMRows {
@@ -22,7 +24,9 @@ class TFMRows {
     std::string back();
     size_t size() const;
 
+    void remove_from(size_t at);
     void pop_back();
+    void remove(size_t at);
     void update(const std::string& data, size_t at);
     void append(const std::string& data);
     void clear();

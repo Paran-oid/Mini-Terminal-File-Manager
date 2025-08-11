@@ -1,51 +1,46 @@
 #ifndef COMMAND_HANDLER_HPP
 #define COMMAND_HANDLER_HPP
 
-#include <functional>
-#include <string>
-#include <unordered_map>
-#include <vector>
+#include "command_executor.hpp"
+#include "command_mapper.hpp"
+#include "command_parser.hpp"
 
+class TFMCommandParser;
+class TFMCommandMapper;
+class TFMCommandExecutor;
+struct TFMCommand;
 class TFMPathHandler;
 class TFMRows;
 class TFMScreen;
 class TFMConfig;
 
-using command_func = std::function<void(const std::vector<std::string>&)>;
-
-enum TFMCommandErrorCode { INVALID, UNAVAILABLE_DIRECTORY };
-
 class TFMCommandHandler {
    private:
-    TFMPathHandler& m_path;
-    TFMRows& m_rows;
-    TFMScreen& m_screen;
-    TFMConfig& m_conf;
-
-    std::vector<std::string> m_args;
-    std::unordered_map<std::string, command_func> match_table;
-    void match_table_init();
-
-    void clear_func(const std::vector<std::string>& args);
-    void cd_func(const std::vector<std::string>& args);
-    void ls_func(const std::vector<std::string>& args);
-    void pwd_func(const std::vector<std::string>& args);
-    void whoami_func(const std::vector<std::string>& args);
-
-    void manage_error(const std::vector<std::string>& args,
-                      TFMCommandErrorCode code);
-
-    std::vector<std::string> parse(const std::string& command);
+    TFMCommandParser m_parser;
+    TFMCommandMapper m_mapper;
+    TFMCommandExecutor m_executor;
 
    public:
     TFMCommandHandler(TFMPathHandler& path, TFMRows& rows, TFMScreen& screen,
-                      TFMConfig& conf)
-        : m_path{path}, m_rows{rows}, m_screen(screen), m_conf{conf} {
-        match_table_init();
+                      TFMConfig& config)
+        : m_parser(), m_mapper(), m_executor(path, rows, screen, config) {
+        m_mapper.register_command(
+            "cd", [this](const TFMCommand& cmd) { m_executor.cd_func(cmd); });
+        m_mapper.register_command(
+            "ls", [this](const TFMCommand& cmd) { m_executor.ls_func(cmd); });
+        m_mapper.register_command(
+            "pwd", [this](const TFMCommand& cmd) { m_executor.pwd_func(cmd); });
+        m_mapper.register_command("clear", [this](const TFMCommand& cmd) {
+            m_executor.clear_func(cmd);
+        });
+        m_mapper.register_command("whoami", [this](const TFMCommand& cmd) {
+            m_executor.whoami_func(cmd);
+        });
     }
+
     ~TFMCommandHandler() = default;
 
-    void process(const std::string& command);
+    void process(const std::string& input);
 };
 
 #endif

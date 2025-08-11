@@ -12,7 +12,7 @@
 void TFMRenderer::buf_append(const std::string& str) { m_abuf << str; }
 
 void TFMRenderer::adjust_scroll() {
-    Cursor cursor = m_cursor.get();
+    TFMCursorCords cursor = m_cursor.get();
 
     int32_t screen_row_off = m_screen.get_row_off();
     int32_t screen_rows = m_screen.get_rows();
@@ -28,7 +28,11 @@ void TFMRenderer::adjust_scroll() {
 void TFMRenderer::draw() {
     for (size_t i = static_cast<size_t>(m_screen.get_row_off());
          i < m_rows.size(); i++) {
-        m_abuf << m_rows.at(i);
+        std::string row = m_rows.at(i);
+        m_abuf << row;
+        if (row.size() != static_cast<size_t>(m_screen.get_cols())) {
+            m_abuf << '\n';
+        }
     }
 }
 
@@ -38,7 +42,7 @@ void TFMRenderer::path_insert() {
     m_cursor.set(static_cast<int32_t>(formatted_curr_path.length()),
                  static_cast<int32_t>(m_rows.size() - 1));
 
-    const command_line new_command_line = {
+    const TFMCommandLineDetails new_command_line = {
         formatted_curr_path, m_rows.size() - 1, formatted_curr_path.size()};
     m_command_line.set(new_command_line);
 }
@@ -46,9 +50,9 @@ void TFMRenderer::path_insert() {
 void TFMRenderer::display() {
     werase(stdscr);
 
-    if (m_conf.is_in_command()) {
+    if (m_config.is_in_command()) {
         path_insert();
-        m_conf.disable_command();
+        m_config.disable_command();
     }
 
     adjust_scroll();
@@ -57,7 +61,7 @@ void TFMRenderer::display() {
     std::string temp = m_abuf.str().c_str();
     printw("%s", m_abuf.str().c_str());
 
-    Cursor cursor_current = m_cursor.get();
+    TFMCursorCords cursor_current = m_cursor.get();
     if (move(cursor_current.cy - m_screen.get_row_off(), cursor_current.cx) ==
         -1) {
         throw std::out_of_range("invalid coordinates for cursor");

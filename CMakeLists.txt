@@ -32,6 +32,10 @@ set(SRC
 	src/path.cpp
 	src/commands/command_history.cpp
 	src/commands/command_handler.cpp
+	src/commands/command_executor.cpp
+	src/commands/command_mapper.cpp
+	src/commands/command_parser.cpp
+
 )
 set(include_dir
 	${CMAKE_SOURCE_DIR}/include

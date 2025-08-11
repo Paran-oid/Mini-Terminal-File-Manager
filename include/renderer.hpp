@@ -14,7 +14,7 @@ class TFMCommandLine;
 
 class TFMRenderer {
    private:
-    TFMConfig& m_conf;
+    TFMConfig& m_config;
     TFMRows& m_rows;
     TFMScreen& m_screen;
     TFMPathHandler& m_path;
@@ -24,10 +24,10 @@ class TFMRenderer {
     std::ostringstream m_abuf;
 
    public:
-    TFMRenderer(TFMConfig& conf, TFMRows& rows, TFMScreen& screen,
+    TFMRenderer(TFMConfig& config, TFMRows& rows, TFMScreen& screen,
                 TFMPathHandler& path, TFMCursor& cursor,
                 TFMCommandLine& command_line)
-        : m_conf{conf},
+        : m_config{config},
           m_rows{rows},
           m_screen{screen},
           m_path{path},

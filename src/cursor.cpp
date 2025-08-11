@@ -9,7 +9,7 @@
 #include "screen.hpp"
 
 void TFMCursor::page_scroll(int32_t direction) {
-    Cursor cursor = this->get();
+    TFMCursorCords cursor = this->get();
     if (direction == KEY_NPAGE) {
         if (static_cast<size_t>(cursor.cy) < m_rows.size() - 1) {
             cursor.cy++;
@@ -26,7 +26,7 @@ void TFMCursor::page_scroll(int32_t direction) {
 }
 
 void TFMCursor::move(int32_t direction) {
-    Screen screen = m_screen.get();
+    TFMScreenDetails screen = m_screen.get();
 
     std::string current_row = m_rows.at(static_cast<size_t>(m_cursor.cy));
     size_t m_command_line_row_index = m_command_line.get_row_index();
@@ -91,4 +91,9 @@ void TFMCursor::move(int32_t direction) {
 
     // updates the cursor
     set(m_cursor.cx, m_cursor.cy);
+}
+
+void TFMCursor::update() {
+    m_cursor.cx = static_cast<int32_t>(m_rows.back().size());
+    m_cursor.cy = static_cast<int32_t>(m_rows.size() - 1);
 }

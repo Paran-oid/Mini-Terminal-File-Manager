@@ -25,7 +25,7 @@ std::vector<std::string> TFMInput::extract_current_rows() {
 
     return res;
 }
-std::string TFMInput::extract_command() {
+std::string TFMInput::extract_input_buf() {
     std::ostringstream buf;
     size_t current_index = m_command_line.get_row_index();
 
@@ -41,9 +41,9 @@ std::string TFMInput::extract_command() {
 void TFMInput::process() {
     int32_t c = getch();
 
-    if (c == CTRL_KEY('q') || c == CTRL_KEY('Q')) m_conf.end_program();
+    if (c == CTRL_KEY('q') || c == CTRL_KEY('Q')) m_config.end_program();
 
-    Cursor cursor = m_cursor.get();
+    TFMCursorCords cursor = m_cursor.get();
 
     int32_t screen_row_off = m_screen.get_row_off();
     int32_t screen_rows = m_screen.get_rows();
@@ -123,23 +123,23 @@ void TFMInput::process() {
 
 void TFMInput::enter() {
     std::string last_row = m_rows.back();
-    Cursor cursor = m_cursor.get();
+    TFMCursorCords cursor = m_cursor.get();
 
     auto current_rows = extract_current_rows();
-    std::string command = extract_command();
+    std::string command = extract_input_buf();
 
     m_command_history.add_previous(current_rows);
     m_rows.update(last_row, static_cast<size_t>(cursor.cy));
 
-    m_conf.enable_command();
+    m_config.enable_command();
     m_command_handler.process(command);
 }
 
 void TFMInput::append_char(int32_t c) {
-    Cursor cursor = m_cursor.get();
+    TFMCursorCords cursor = m_cursor.get();
 
     auto current_rows = extract_current_rows();
-    std::string command = extract_command();
+    std::string command = extract_input_buf();
 
     std::string last_row = m_rows.back() + static_cast<char>(c);
 
@@ -151,26 +151,29 @@ void TFMInput::append_char(int32_t c) {
 }
 
 void TFMInput::match() {
-    std::string cmd = extract_command();
-    if (cmd.empty()) {
+    // TODO: make this work just like in linux terminal
+
+    std::string input_buf = extract_input_buf();
+    if (input_buf.empty()) {
         return;
     }
 
-    std::string match = m_path.find_best_match(cmd);
+    std::string match = m_path.find_best_match(input_buf);
 
-    if (match == cmd) {
+    if (match == input_buf) {
         return;
     }
 
     match = m_path.get_path().string() + ":~$ " + match;
-    // TODO: fix the logic here
+    m_rows.remove_from(m_command_line.get_row_index());
     m_rows.append(match);
+    m_cursor.update();
 }
 
 void TFMInput::remove_char() {
     static bool callback = false;
 
-    Cursor cursor = m_cursor.get();
+    TFMCursorCords cursor = m_cursor.get();
     std::string last_row = m_rows.back();
 
     if (m_cursor.is_cursor_at_command_line()) {
