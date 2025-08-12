@@ -9,7 +9,7 @@
 
 class TFMCommandMapper {
    private:
-    std::unordered_map<std::string, command_func> match_table;
+    std::unordered_map<std::string, command_func> m_match_table;
 
    public:
     TFMCommandMapper() = default;

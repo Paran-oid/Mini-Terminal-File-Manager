@@ -19,16 +19,16 @@ void TFMCommandHandler::process(const std::string& input) {
         return;
     }
 
-    TFMCommand command = m_parser.parse(input);
+    TFMCommand cmd = m_parser.parse(input);
 
-    if (command.empty()) {
+    if (cmd.empty()) {
         return;
     }
 
-    auto it = m_mapper.find(command.name);
+    auto it = m_mapper.find(cmd.name);
     if (it != m_mapper.end()) {
-        it->second(command);
+        it->second(cmd);
     } else {
-        m_executor.manage_error(command, INVALID);
+        m_executor.manage_error(cmd, INVALID_COMMAND);
     }
 }

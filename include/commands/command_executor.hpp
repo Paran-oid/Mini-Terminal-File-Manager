@@ -13,7 +13,14 @@ class TFMRows;
 class TFMScreen;
 class TFMConfig;
 
-enum TFMCommandErrorCode { INVALID, UNAVAILABLE_DIRECTORY };
+enum TFMCommandErrorCode {
+    INVALID_COMMAND,
+    UNAVAILABLE_DIRECTORY,
+    MISSING_OPERAND,
+    MISSING_FILE_OPERAND,
+    MISSING_FILE_DESTINATION,
+    FAILED_DIRECTORY_CREATION
+};
 
 class TFMCommandExecutor {
    private:
@@ -29,12 +36,16 @@ class TFMCommandExecutor {
     ~TFMCommandExecutor() = default;
 
     void clear_func(const TFMCommand& cmd);
-    void cd_func(const TFMCommand& args);
-    void ls_func(const TFMCommand& args);
-    void pwd_func(const TFMCommand& args);
-    void whoami_func(const TFMCommand& args);
+    void cd_func(const TFMCommand& cmd);
+    void ls_func(const TFMCommand& cmd);
+    void pwd_func(const TFMCommand& cmd);
+    void whoami_func(const TFMCommand& cmd);
 
-    void manage_error(const TFMCommand& args, TFMCommandErrorCode code);
+    void cp_func(const TFMCommand& cmd);
+    void mkdir_func(const TFMCommand& cmd);
+
+    void manage_error(const TFMCommand& cmd, TFMCommandErrorCode code,
+                      std::string data = "");
 };
 
 #endif

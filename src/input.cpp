@@ -126,20 +126,20 @@ void TFMInput::enter() {
     TFMCursorCords cursor = m_cursor.get();
 
     auto current_rows = extract_current_rows();
-    std::string command = extract_input_buf();
+    std::string cmd = extract_input_buf();
 
     m_command_history.add_previous(current_rows);
     m_rows.update(last_row, static_cast<size_t>(cursor.cy));
 
     m_config.enable_command();
-    m_command_handler.process(command);
+    m_command_handler.process(cmd);
 }
 
 void TFMInput::append_char(int32_t c) {
     TFMCursorCords cursor = m_cursor.get();
 
     auto current_rows = extract_current_rows();
-    std::string command = extract_input_buf();
+    std::string cmd = extract_input_buf();
 
     std::string last_row = m_rows.back() + static_cast<char>(c);
 

@@ -14,12 +14,12 @@ std::vector<std::string> TFMCommandHistory::pop_upcoming() {
     return res;
 }
 
-void TFMCommandHistory::add_previous(const std::vector<std::string>& command) {
-    m_previous_stack.push(command);
+void TFMCommandHistory::add_previous(const std::vector<std::string>& cmd) {
+    m_previous_stack.push(cmd);
 }
 
-void TFMCommandHistory::add_upcoming(const std::vector<std::string>& command) {
-    m_upcoming_stack.push(command);
+void TFMCommandHistory::add_upcoming(const std::vector<std::string>& cmd) {
+    m_upcoming_stack.push(cmd);
 }
 
 void TFMCommandHistory::undo() {

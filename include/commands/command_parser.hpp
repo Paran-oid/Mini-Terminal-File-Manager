@@ -7,6 +7,7 @@
 struct TFMCommand {
     std::string name;
     std::vector<std::string> args;
+    // TODO: make it seperate between flags and normal params
 
     bool empty() { return name.empty(); }
 };

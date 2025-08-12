@@ -2,8 +2,8 @@
 
 #include <sstream>
 
-TFMCommand TFMCommandParser::parse(const std::string& command) const {
-    std::istringstream iss(command);
+TFMCommand TFMCommandParser::parse(const std::string& cmd) const {
+    std::istringstream iss(cmd);
     std::string buf;
 
     TFMCommand res;

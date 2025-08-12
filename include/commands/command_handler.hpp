@@ -36,6 +36,11 @@ class TFMCommandHandler {
         m_mapper.register_command("whoami", [this](const TFMCommand& cmd) {
             m_executor.whoami_func(cmd);
         });
+        m_mapper.register_command(
+            "cp", [this](const TFMCommand& cmd) { m_executor.cp_func(cmd); });
+        m_mapper.register_command("mkdir", [this](const TFMCommand& cmd) {
+            m_executor.mkdir_func(cmd);
+        });
     }
 
     ~TFMCommandHandler() = default;

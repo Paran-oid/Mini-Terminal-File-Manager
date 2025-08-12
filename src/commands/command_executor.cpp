@@ -11,16 +11,42 @@
 #include "rows.hpp"
 #include "screen.hpp"
 
-void TFMCommandExecutor::manage_error(const TFMCommand& command,
-                                      TFMCommandErrorCode code) {
+void TFMCommandExecutor::manage_error(const TFMCommand& cmd,
+                                      TFMCommandErrorCode code,
+                                      std::string data) {
     std::ostringstream message_buf;
     switch (code) {
-        case INVALID:
-            message_buf << command.name << ": command not found";
+        case INVALID_COMMAND:
+            message_buf << cmd.name << ": cmd not found";
             break;
         case UNAVAILABLE_DIRECTORY:
-            message_buf << command.name << ": " << command.args[0]
+            message_buf << cmd.name << ": " << cmd.args[0]
                         << ": no such file or directory";
+            break;
+        case MISSING_OPERAND:
+            message_buf << cmd.name << ": " << "missing operand";
+            break;
+        case MISSING_FILE_OPERAND:
+            if (cmd.args.empty()) {
+                message_buf << cmd.name << ": " << "missing file operand";
+            } else {
+                message_buf << cmd.name << ": "
+                            << "missing file operand after: '" << cmd.args[0]
+                            << "'";
+            }
+            break;
+        case MISSING_FILE_DESTINATION:
+            message_buf << cmd.name << ": "
+                        << "missing destination file operand after '"
+                        << cmd.args[0] << "'";
+            break;
+        case FAILED_DIRECTORY_CREATION:
+            if (data.empty()) {
+                message_buf << cmd.name << ": " << "failed creating directory'";
+            } else {
+                message_buf << cmd.name << ": " << "failed creating directory '"
+                            << data;
+            }
             break;
         default:
             break;
@@ -29,17 +55,17 @@ void TFMCommandExecutor::manage_error(const TFMCommand& command,
     m_rows.append(message_buf.str());
 }
 
-void TFMCommandExecutor::clear_func(const TFMCommand& command) {
-    (void)command;
+void TFMCommandExecutor::clear_func(const TFMCommand& cmd) {
+    (void)cmd;
     m_rows.clear();
 }
 
-void TFMCommandExecutor::cd_func(const TFMCommand& command) {
-    if (command.args.empty() || command.args.size() < 2) {
+void TFMCommandExecutor::cd_func(const TFMCommand& cmd) {
+    if (cmd.args.empty()) {
         return;
     }
 
-    std::string path_str = command.args[1];
+    std::string path_str = cmd.args[0];
     m_path.expand(path_str);
 
     if (path_str == "-") {
@@ -51,7 +77,7 @@ void TFMCommandExecutor::cd_func(const TFMCommand& command) {
     fs::path target_path(path_str);
 
     if (!fs::exists(target_path)) {
-        manage_error(command, UNAVAILABLE_DIRECTORY);
+        manage_error(cmd, UNAVAILABLE_DIRECTORY);
         return;
     }
 
@@ -59,7 +85,7 @@ void TFMCommandExecutor::cd_func(const TFMCommand& command) {
         // handles symlinks and relative paths
         target_path = fs::canonical(target_path);
     } catch (const fs::filesystem_error& e) {
-        manage_error(command, UNAVAILABLE_DIRECTORY);
+        manage_error(cmd, UNAVAILABLE_DIRECTORY);
         return;
     }
 
@@ -67,8 +93,8 @@ void TFMCommandExecutor::cd_func(const TFMCommand& command) {
     m_path.set_path(target_path);
 }
 
-void TFMCommandExecutor::ls_func(const TFMCommand& command) {
-    (void)command;
+void TFMCommandExecutor::ls_func(const TFMCommand& cmd) {
+    (void)cmd;
 
     // TODO:
     // make a ls_analyze funciton to analyze for flags
@@ -123,12 +149,48 @@ void TFMCommandExecutor::ls_func(const TFMCommand& command) {
     }
 }
 
-void TFMCommandExecutor::pwd_func(const TFMCommand& command) {
-    (void)command;
+void TFMCommandExecutor::pwd_func(const TFMCommand& cmd) {
+    (void)cmd;
     m_rows.append(m_path.get_path().string());
 }
 
-void TFMCommandExecutor::whoami_func(const TFMCommand& command) {
-    (void)command;
+void TFMCommandExecutor::whoami_func(const TFMCommand& cmd) {
+    (void)cmd;
     m_rows.append(m_config.get_username());
+}
+
+// TODO: make cat func
+
+void TFMCommandExecutor::cp_func(const TFMCommand& cmd) {
+    (void)cmd;
+
+    if (cmd.args.empty() || cmd.args.size() == 1) {
+        manage_error(cmd, MISSING_FILE_OPERAND);
+        return;
+    }
+
+    std::string src = cmd.args[0];
+    std::string dst = cmd.args[1];
+    if (!fs::exists(src)) {
+        manage_error(cmd, MISSING_FILE_DESTINATION);
+        return;
+    }
+
+    // !works just for files for now, until we introduce flags
+    fs::copy(src, dst);
+}
+
+void TFMCommandExecutor::mkdir_func(const TFMCommand& cmd) {
+    if (cmd.args.empty()) {
+        manage_error(cmd, MISSING_OPERAND);
+    }
+
+    for (const auto& arg : cmd.args) {
+        std::string str_path = m_path.get_path().string() + "/" + arg;
+        try {
+            fs::create_directories(str_path);
+        } catch (const fs::filesystem_error& e) {
+            manage_error(cmd, FAILED_DIRECTORY_CREATION, arg);
+        }
+    }
 }
