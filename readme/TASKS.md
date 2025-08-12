@@ -1,8 +1,7 @@
 # TASKS
 
-***TODO: Show hidden files (.dotfiles)***
 ***TODO: write documentation***
-***TODO: Order functions in cpp files like they are in their headers***
+***TODO: Order functions in cpp files like they are in their headers (make sure everything is organized)***
 
 ✅ 1. Core File Navigation
 

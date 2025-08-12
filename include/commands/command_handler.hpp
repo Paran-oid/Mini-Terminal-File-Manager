@@ -41,6 +41,9 @@ class TFMCommandHandler {
         m_mapper.register_command("mkdir", [this](const TFMCommand& cmd) {
             m_executor.mkdir_func(cmd);
         });
+        m_mapper.register_command("touch", [this](const TFMCommand& cmd) {
+            m_executor.touch_func(cmd);
+        });
     }
 
     ~TFMCommandHandler() = default;

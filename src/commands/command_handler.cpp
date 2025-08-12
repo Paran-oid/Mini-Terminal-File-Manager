@@ -21,7 +21,7 @@ void TFMCommandHandler::process(const std::string& input) {
 
     TFMCommand cmd = m_parser.parse(input);
 
-    if (cmd.empty()) {
+    if (cmd.name.empty()) {
         return;
     }
 

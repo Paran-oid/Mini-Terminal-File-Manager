@@ -19,7 +19,8 @@ enum TFMCommandErrorCode {
     MISSING_OPERAND,
     MISSING_FILE_OPERAND,
     MISSING_FILE_DESTINATION,
-    FAILED_DIRECTORY_CREATION
+    FAILED_DIRECTORY_CREATION,
+    NONE
 };
 
 class TFMCommandExecutor {
@@ -43,6 +44,7 @@ class TFMCommandExecutor {
 
     void cp_func(const TFMCommand& cmd);
     void mkdir_func(const TFMCommand& cmd);
+    void touch_func(const TFMCommand& cmd);
 
     void manage_error(const TFMCommand& cmd, TFMCommandErrorCode code,
                       std::string data = "");
