@@ -45,9 +45,10 @@ class TFMInput {
     std::vector<std::string> extract_current_rows();
     std::string extract_input_buf();
 
-    void append_char(int32_t c);
+    void append_char(char c);
     void remove_char();
     void process();
+    void refresh();
     void enter();
     void match();
 };

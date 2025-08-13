@@ -21,11 +21,16 @@ void TFMScreen::window_size_update(int32_t sig) {
 
 void TFMScreen::update_dimensions(int32_t sig) {
     (void)sig;
-    getmaxyx(stdscr, m_screen.rows, m_screen.cols);
-    if (m_screen.rows == -1 || m_screen.cols == -1) {
+    int32_t rows, cols;
+    getmaxyx(stdscr, rows, cols);
+
+    if (rows == -1 || cols == -1) {
         throw std::runtime_error(
             "TFMScreen: error initializing screen dimensions");
     }
+
+    m_screen.rows = static_cast<size_t>(rows);
+    m_screen.cols = static_cast<size_t>(cols);
 }
 
 void TFMScreen::terminal_init() {

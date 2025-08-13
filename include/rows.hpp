@@ -11,6 +11,7 @@ class TFMScreen;
 
 class TFMRows {
    private:
+    // TODO: remove all references of other classes???
     TFMScreen& m_screen;
 
     std::vector<std::string> m_app_rows;
@@ -19,17 +20,28 @@ class TFMRows {
     TFMRows(TFMScreen& screen) : m_screen{screen} {};
     ~TFMRows() = default;
 
-    std::string at(size_t at) const;
-    std::string front();
-    std::string back();
+    std::string& at(size_t index);
+    const std::string& at(size_t index) const;
+
+    std::string& front();
+    const std::string& front() const;
+
+    std::string& back();
+    const std::string& back() const;
+
     size_t size() const;
 
-    void remove_from(size_t at);
+    // TODO: remove all of these under me
+    void update(const std::string& data,
+                size_t index);  // TODO: remove this and let user directly add
+                                // TODO: when he makes a reference
+    void append(const std::string& data);  // TODO: remove
+    void remove_from(size_t index);
+    void remove(size_t index);
     void pop_back();
-    void remove(size_t at);
-    void update(const std::string& data, size_t at);
-    void append(const std::string& data);
     void clear();
+
+    bool empty();
 };
 
 #endif

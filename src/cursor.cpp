@@ -11,7 +11,7 @@
 void TFMCursor::page_scroll(int32_t direction) {
     TFMCursorCords cursor = this->get();
     if (direction == KEY_NPAGE) {
-        if (static_cast<size_t>(cursor.cy) < m_rows.size() - 1) {
+        if (cursor.cy < m_rows.size() - 1) {
             cursor.cy++;
         }
     } else if (direction == KEY_PPAGE) {
@@ -28,7 +28,7 @@ void TFMCursor::page_scroll(int32_t direction) {
 void TFMCursor::move(int32_t direction) {
     TFMScreenDetails screen = m_screen.get();
 
-    std::string current_row = m_rows.at(static_cast<size_t>(m_cursor.cy));
+    std::string current_row = m_rows.at(m_cursor.cy);
     size_t m_command_line_row_index = m_command_line.get_row_index();
 
     std::vector<std::string> rows_temp;
@@ -42,18 +42,17 @@ void TFMCursor::move(int32_t direction) {
                 }
                 m_cursor.cy++;
                 m_cursor.cx = 0;
-            } else if (static_cast<size_t>(m_cursor.cx) <
-                       current_row.length()) {
+            } else if (m_cursor.cx < current_row.length()) {
                 m_cursor.cx++;
             }
             break;
         case KEY_LEFT:
-            if (!is_cursor_at_command_line() && m_cursor.cx != 0) {
+            if (!is_cursor_at_command_line() && m_cursor.cx > 0) {
                 m_cursor.cx--;
             } else if (m_cursor.cx == 0) {
                 m_cursor.cy--;
-                current_row = m_rows.at(static_cast<size_t>(m_cursor.cy));
-                m_cursor.cx = static_cast<int32_t>(current_row.size()) - 1;
+                current_row = m_rows.at(m_cursor.cy);
+                m_cursor.cx = current_row.size() - 1;
             }
             break;
         case KEY_UP:
@@ -80,8 +79,7 @@ void TFMCursor::move(int32_t direction) {
                                 i + m_command_line_row_index};
                 m_rows.update(rows_temp[i], tracked_data.second);
             }
-            this->set(static_cast<int32_t>(tracked_data.first),
-                      static_cast<int32_t>(tracked_data.second));
+            this->set(tracked_data.first, tracked_data.second);
 
             break;
         default:
@@ -89,11 +87,10 @@ void TFMCursor::move(int32_t direction) {
                 "TFMCursor: invalid cursor move instruction");
     }
 
-    // updates the cursor
     set(m_cursor.cx, m_cursor.cy);
 }
 
 void TFMCursor::update() {
-    m_cursor.cx = static_cast<int32_t>(m_rows.back().size());
-    m_cursor.cy = static_cast<int32_t>(m_rows.size() - 1);
+    m_cursor.cx = m_rows.back().size();
+    m_cursor.cy = m_rows.size() - 1;
 }

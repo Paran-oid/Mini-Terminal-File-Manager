@@ -1,11 +1,12 @@
 #ifndef SCREEN_HPP
 #define SCREEN_HPP
 
+#include <cstddef>
 #include <cstdint>
 
 struct TFMScreenDetails {
-    int32_t rows, cols;
-    int32_t row_off;
+    size_t rows, cols;
+    size_t row_off;
 };
 
 class TFMScreen {
@@ -27,14 +28,14 @@ class TFMScreen {
     TFMScreenDetails get() const { return m_screen; }
     void set(const TFMScreenDetails& new_screen) { m_screen = new_screen; }
 
-    int32_t get_rows() const { return m_screen.rows; }
-    void set_rows(int32_t rows) { m_screen.rows = rows; }
+    size_t get_rows() const { return m_screen.rows; }
+    void set_rows(size_t rows) { m_screen.rows = rows; }
 
-    int32_t get_cols() const { return m_screen.cols; }
-    void set_cols(int32_t cols) { m_screen.cols = cols; }
+    size_t get_cols() const { return m_screen.cols; }
+    void set_cols(size_t cols) { m_screen.cols = cols; }
 
-    int32_t get_row_off() const { return m_screen.row_off; }
-    void set_row_off(int32_t row_off) { m_screen.row_off = row_off; }
+    size_t get_row_off() const { return m_screen.row_off; }
+    void set_row_off(size_t row_off) { m_screen.row_off = row_off; }
 
     void update_dimensions(int32_t sig);
     void terminal_destroy();

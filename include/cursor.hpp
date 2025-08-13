@@ -12,7 +12,7 @@ class TFMScreen;
 class TFMCommandHistory;
 
 struct TFMCursorCords {
-    int32_t cx, cy;
+    size_t cx, cy;
 };
 
 class TFMCursor {
@@ -35,21 +35,17 @@ class TFMCursor {
     }
     ~TFMCursor() = default;
 
-    TFMCursorCords get() { return m_cursor; }
-    void set(int32_t cx, int32_t cy) { m_cursor = {cx, cy}; }
+    const TFMCursorCords& get() const { return m_cursor; }
+    void set(size_t cx, size_t cy) { m_cursor = {cx, cy}; }
 
     void page_scroll(int32_t direction);
     void move(int32_t direction);
     void update();
 
-    bool is_cursor_at_last_row() {
-        return m_cursor.cy == static_cast<int32_t>(m_rows.size()) - 1;
-    }
+    bool is_cursor_at_last_row() { return m_cursor.cy == m_rows.size() - 1; }
     bool is_cursor_at_command_line() {
-        return static_cast<size_t>(m_cursor.cy) ==
-                   m_command_line.get_row_index() &&
-               static_cast<size_t>(m_cursor.cx) ==
-                   m_command_line.get_data().length();
+        return m_cursor.cy == m_command_line.get_row_index() &&
+               m_cursor.cx == m_command_line.get_data().length();
         ;
     }
 };

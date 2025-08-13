@@ -144,9 +144,9 @@ void TFMCommandExecutor::ls_func(const TFMCommand& cmd) {
 
     size_t max_length = it_max_length->length();
 
-    size_t cols = static_cast<size_t>(m_screen.get_cols()) / max_length;
+    size_t cols = static_cast<size_t>(m_screen.get_cols() / max_length);
     size_t rows = static_cast<size_t>(std::ceil(
-        static_cast<double>(filenames.size()) / static_cast<double>(cols)));
+        static_cast<float>(filenames.size()) / static_cast<float>(cols)));
 
     for (size_t i = 0; i < rows; i++) {
         std::ostringstream os;

@@ -14,8 +14,8 @@ void TFMRenderer::buf_append(const std::string& str) { m_abuf << str; }
 void TFMRenderer::adjust_scroll() {
     TFMCursorCords cursor = m_cursor.get();
 
-    int32_t screen_row_off = m_screen.get_row_off();
-    int32_t screen_rows = m_screen.get_rows();
+    size_t screen_row_off = m_screen.get_row_off();
+    size_t screen_rows = m_screen.get_rows();
 
     if (cursor.cy < screen_row_off) {
         screen_row_off = cursor.cy;
@@ -25,12 +25,12 @@ void TFMRenderer::adjust_scroll() {
 
     m_screen.set_row_off(screen_row_off);
 }
+
 void TFMRenderer::draw() {
-    for (size_t i = static_cast<size_t>(m_screen.get_row_off());
-         i < m_rows.size(); i++) {
+    for (size_t i = m_screen.get_row_off(); i < m_rows.size(); i++) {
         std::string row = m_rows.at(i);
         m_abuf << row;
-        if (row.size() != static_cast<size_t>(m_screen.get_cols())) {
+        if (row.size() != m_screen.get_cols()) {
             m_abuf << '\n';
         }
     }
@@ -39,8 +39,7 @@ void TFMRenderer::draw() {
 void TFMRenderer::path_insert() {
     std::string formatted_curr_path = m_path.get_path().string() + ":~$ ";
     m_rows.append(formatted_curr_path);
-    m_cursor.set(static_cast<int32_t>(formatted_curr_path.length()),
-                 static_cast<int32_t>(m_rows.size() - 1));
+    m_cursor.set(formatted_curr_path.length(), m_rows.size() - 1);
 
     const TFMCommandLineDetails new_command_line = {
         formatted_curr_path, m_rows.size() - 1, formatted_curr_path.size()};
@@ -62,8 +61,11 @@ void TFMRenderer::display() {
     printw("%s", m_abuf.str().c_str());
 
     TFMCursorCords cursor_current = m_cursor.get();
-    if (move(cursor_current.cy - m_screen.get_row_off(), cursor_current.cx) ==
-        -1) {
+    int32_t calculated_cy =
+        static_cast<int32_t>(cursor_current.cy - m_screen.get_row_off());
+    int32_t calculated_cx = static_cast<int32_t>(cursor_current.cx);
+
+    if (move(calculated_cy, calculated_cx) == -1) {
         throw std::out_of_range("invalid coordinates for cursor");
     }
 
