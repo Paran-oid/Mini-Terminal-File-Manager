@@ -1,5 +1,4 @@
-#ifndef PATH_HPP
-#define PATH_HPP
+#pragma once
 
 #include <filesystem>
 #include <vector>
@@ -34,5 +33,3 @@ class TFMPathHandler {
     void update_home_dir();
     void expand(std::string& path);
 };
-
-#endif

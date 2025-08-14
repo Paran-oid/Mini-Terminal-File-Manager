@@ -1,4 +1,4 @@
-#include "core.hpp"
+#include "utils.hpp"
 
 #include <ncurses.h>
 

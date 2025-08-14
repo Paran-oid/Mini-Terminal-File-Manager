@@ -1,5 +1,4 @@
-#ifndef command_line_HPP
-#define command_line_HPP
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -32,5 +31,3 @@ class TFMCommandLine {
     size_t get_size() const { return m_command_line.size; }
     void set_size(size_t s) { m_command_line.size = s; }
 };
-
-#endif

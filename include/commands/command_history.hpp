@@ -1,5 +1,4 @@
-#ifndef COMMAND_HISTORY_HPP
-#define COMMAND_HISTORY_HPP
+#pragma once
 
 #include <stack>
 #include <stdexcept>
@@ -37,5 +36,3 @@ class TFMCommandHistory {
     void redo();
     void clear();
 };
-
-#endif

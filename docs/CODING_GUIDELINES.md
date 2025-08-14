@@ -73,7 +73,7 @@ Whenever you find a bug, we encourage you to fix it [and/or at least] leave a co
 
 #ifdef FIX_BUGS
 // Bug fixing code here
-#endif
+
 
 Handling translated (GXT) text
 

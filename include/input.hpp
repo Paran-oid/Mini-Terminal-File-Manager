@@ -1,5 +1,4 @@
-#ifndef INPUT_HPP
-#define INPUT_HPP
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -52,5 +51,3 @@ class TFMInput {
     void enter();
     void match();
 };
-
-#endif

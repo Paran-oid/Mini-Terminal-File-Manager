@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <unordered_map>
 
-#include "core.hpp"
+#include "utils.hpp"
 
 void TFMPathHandler::set_path(const fs::path& path) {
     m_current_path = path;
@@ -26,7 +26,7 @@ void TFMPathHandler::expand(std::string& path) {
 }
 
 void TFMPathHandler::update_home_dir() {
-    std::string path = m_current_path.string();
+    const std::string& path = m_current_path.string();
 
     uint8_t counter = 0;
     auto it = std::find_if(path.begin(), path.end(), [&counter](char c) {
@@ -67,7 +67,6 @@ std::vector<std::string> TFMPathHandler::find_matches(const std::string& row) {
 
 std::string TFMPathHandler::find_best_match(const std::string& row) {
     // TODO: try to find in list of commands
-
 
     // !if not found in list of commands try to find matching directory
     std::vector<std::string> matches = this->find_matches(row);

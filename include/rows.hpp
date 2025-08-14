@@ -1,5 +1,4 @@
-#ifndef ROWS_HPP
-#define ROWS_HPP
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -31,17 +30,11 @@ class TFMRows {
 
     size_t size() const;
 
-    // TODO: remove all of these under me
-    void update(const std::string& data,
-                size_t index);  // TODO: remove this and let user directly add
-                                // TODO: when he makes a reference
-    void append(const std::string& data);  // TODO: remove
-    void remove_from(size_t index);
+    void append(const std::string& row);
     void remove(size_t index);
-    void pop_back();
+    void remove_last();
+    void remove_from(size_t index);
     void clear();
 
-    bool empty();
+    bool is_empty();
 };
-
-#endif

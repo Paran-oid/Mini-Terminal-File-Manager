@@ -1,5 +1,4 @@
-#ifndef COMMAND_MAPPER_HPP
-#define COMMAND_MAPPER_HPP
+#pragma once
 
 #include <functional>
 #include <string>
@@ -21,5 +20,3 @@ class TFMCommandMapper {
 
     std::unordered_map<std::string, command_func>::iterator end();
 };
-
-#endif

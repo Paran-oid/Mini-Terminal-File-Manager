@@ -42,12 +42,6 @@ void TFMScreen::terminal_init() {
 
     ms_instance = this;
 
-    // hide cursor
-    // curs_set(0);
-
-    // don't allow delay for keypresses
-    // timeout(0);
-
     std::signal(SIGINT, ms_instance->handle_exit);
     std::signal(SIGWINCH, ms_instance->window_size_update);
 }

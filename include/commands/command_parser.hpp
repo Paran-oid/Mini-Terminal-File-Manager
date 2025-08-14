@@ -1,5 +1,4 @@
-#ifndef COMMAND_PARSER_HPP
-#define COMMAND_PARSER_HPP
+#pragma once
 
 #include <string>
 #include <vector>
@@ -18,5 +17,3 @@ class TFMCommandParser {
 
     TFMCommand parse(const std::string& command) const;
 };
-
-#endif

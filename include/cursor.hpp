@@ -1,5 +1,4 @@
-#ifndef CURSOR_HPP
-#define CURSOR_HPP
+#pragma once
 
 #include <cstdint>
 
@@ -49,5 +48,3 @@ class TFMCursor {
         ;
     }
 };
-
-#endif

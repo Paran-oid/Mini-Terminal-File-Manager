@@ -12,7 +12,7 @@
 void TFMRenderer::buf_append(const std::string& str) { m_abuf << str; }
 
 void TFMRenderer::adjust_scroll() {
-    TFMCursorCords cursor = m_cursor.get();
+    const TFMCursorCords& cursor = m_cursor.get();
 
     size_t screen_row_off = m_screen.get_row_off();
     size_t screen_rows = m_screen.get_rows();
@@ -28,7 +28,7 @@ void TFMRenderer::adjust_scroll() {
 
 void TFMRenderer::draw() {
     for (size_t i = m_screen.get_row_off(); i < m_rows.size(); i++) {
-        std::string row = m_rows.at(i);
+        const std::string& row = m_rows.at(i);
         m_abuf << row;
         if (row.size() != m_screen.get_cols()) {
             m_abuf << '\n';
@@ -43,6 +43,7 @@ void TFMRenderer::path_insert() {
 
     const TFMCommandLineDetails new_command_line = {
         formatted_curr_path, m_rows.size() - 1, formatted_curr_path.size()};
+
     m_command_line.set(new_command_line);
 }
 
@@ -57,10 +58,9 @@ void TFMRenderer::display() {
     adjust_scroll();
     draw();
 
-    std::string temp = m_abuf.str().c_str();
     printw("%s", m_abuf.str().c_str());
 
-    TFMCursorCords cursor_current = m_cursor.get();
+    const TFMCursorCords& cursor_current = m_cursor.get();
     int32_t calculated_cy =
         static_cast<int32_t>(cursor_current.cy - m_screen.get_row_off());
     int32_t calculated_cx = static_cast<int32_t>(cursor_current.cx);

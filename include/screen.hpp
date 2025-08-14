@@ -1,5 +1,4 @@
-#ifndef SCREEN_HPP
-#define SCREEN_HPP
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
@@ -41,5 +40,3 @@ class TFMScreen {
     void terminal_destroy();
     void terminal_init();
 };
-
-#endif

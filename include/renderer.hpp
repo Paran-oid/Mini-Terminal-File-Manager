@@ -1,5 +1,4 @@
-#ifndef RENDERER_HPP
-#define RENDERER_HPP
+#pragma once
 
 #include <cstdint>
 #include <sstream>
@@ -43,5 +42,3 @@ class TFMRenderer {
     void display();
     void draw();
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef COMMAND_EXECUTOR_HPP
-#define COMMAND_EXECUTOR_HPP
+#pragma once
 
 #include <functional>
 
@@ -49,5 +48,3 @@ class TFMCommandExecutor {
     void manage_error(const TFMCommand& cmd, TFMCommandErrorCode code,
                       std::string data = "");
 };
-
-#endif

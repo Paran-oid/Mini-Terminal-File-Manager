@@ -22,14 +22,6 @@ void TFMRows::append(const std::string& data) {
     }
 }
 
-void TFMRows::update(const std::string& data, size_t index) {
-    if (index >= m_app_rows.size()) {
-        throw std::out_of_range("TFMRows: passed an invalid 'index' paramter");
-    }
-
-    m_app_rows[index] = data;
-}
-
 void TFMRows::remove_from(size_t index) {
     if (index >= m_app_rows.size()) {
         throw std::out_of_range("TFMRows: passed an invalid 'index' paramter");
@@ -38,6 +30,7 @@ void TFMRows::remove_from(size_t index) {
     m_app_rows.erase(m_app_rows.begin() + static_cast<diff_t>(index),
                      m_app_rows.end());
 }
+
 void TFMRows::remove(size_t index) {
     if (index >= m_app_rows.size()) {
         throw std::out_of_range("TFMRows: passed an invalid 'index' paramter");
@@ -46,7 +39,7 @@ void TFMRows::remove(size_t index) {
     m_app_rows.erase(m_app_rows.begin() + static_cast<diff_t>(index));
 }
 
-void TFMRows::pop_back() { m_app_rows.pop_back(); }
+void TFMRows::remove_last() { m_app_rows.pop_back(); }
 
 std::string& TFMRows::at(size_t index) {
     if (index >= m_app_rows.size()) {
@@ -72,4 +65,4 @@ const std::string& TFMRows::back() const { return m_app_rows.back(); }
 size_t TFMRows::size() const { return m_app_rows.size(); }
 
 void TFMRows::clear() { m_app_rows.clear(); }
-bool TFMRows::empty() { return this->size() == 0; }
+bool TFMRows::is_empty() { return this->size() == 0; }

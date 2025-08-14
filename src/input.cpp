@@ -9,11 +9,11 @@
 #include "command_history.hpp"
 #include "command_line.hpp"
 #include "config.hpp"
-#include "core.hpp"
 #include "cursor.hpp"
 #include "path.hpp"
 #include "rows.hpp"
 #include "screen.hpp"
+#include "utils.hpp"
 
 std::vector<std::string> TFMInput::extract_current_rows() {
     std::vector<std::string> res;
@@ -25,6 +25,7 @@ std::vector<std::string> TFMInput::extract_current_rows() {
 
     return res;
 }
+
 std::string TFMInput::extract_input_buf() {
     std::ostringstream buf;
     size_t current_index = m_command_line.get_row_index();
@@ -41,18 +42,20 @@ std::string TFMInput::extract_input_buf() {
 void TFMInput::process() {
     int32_t c = getch();
 
-    if (c == CTRL_KEY('q') || c == CTRL_KEY('Q')) m_config.end_program();
-
     TFMCursorCords cursor = m_cursor.get();
 
     size_t screen_row_off = m_screen.get_row_off();
     size_t screen_rows = m_screen.get_rows();
-
     size_t times = screen_rows;
 
-    // TODO: make it show all matches if tab was clicked twice (used timeout)
+    if (c == CTRL_KEY('q') || c == CTRL_KEY('Q')) m_config.end_program();
 
     switch (c) {
+            /*
+            !make it show all matches if tab was clicked twice (used
+            !timeout)
+            */
+
         case KEY_BTAB:
         case '\t':
             this->match();
@@ -122,14 +125,15 @@ void TFMInput::process() {
 // TODO: make ctrl + arrow work (LATER)
 
 void TFMInput::refresh() {
-    if (m_rows.empty()) {
+    if (m_rows.is_empty()) {
         return;
     }
 
     size_t cols = m_screen.get_cols();
+    size_t command_line_index = m_command_line.get_row_index();
 
     // handle underflow if any
-    for (size_t i = 0; i < m_rows.size() - 1; i++) {
+    for (size_t i = command_line_index; i < m_rows.size() - 1; i++) {
         std::string& row = m_rows.at(i);
         size_t len = row.length();
 
@@ -142,13 +146,13 @@ void TFMInput::refresh() {
             next_row = next_row.substr(needed);
 
             if (next_row.empty()) {
-                m_rows.pop_back();
+                m_rows.remove_last();
             }
         }
     }
 
     // handle overflow if any
-    for (size_t i = 0; i < m_rows.size(); i++) {
+    for (size_t i = command_line_index; i < m_rows.size(); i++) {
         std::string& row = m_rows.at(i);
         size_t len = row.length();
 
@@ -170,14 +174,10 @@ void TFMInput::refresh() {
 }
 
 void TFMInput::enter() {
-    std::string last_row = m_rows.back();
-    TFMCursorCords cursor = m_cursor.get();
-
-    auto current_rows = extract_current_rows();
-    std::string cmd = extract_input_buf();
-
+    const std::vector<std::string>& current_rows = extract_current_rows();
+    const std::string& cmd = extract_input_buf();
+    // TODO: COULD HAVE PROBLEMS HERE
     m_command_history.add_previous(current_rows);
-    m_rows.update(last_row, cursor.cy);
 
     m_config.enable_command();
     m_command_handler.process(cmd);
@@ -190,7 +190,7 @@ void TFMInput::append_char(char c) {
     size_t cursor_cy = cursor.cy;
 
     std::vector<std::string> current_rows = extract_current_rows();
-    std::string cmd = extract_input_buf();
+    const std::string& cmd = extract_input_buf();
     std::string& current_row = m_rows.at(cursor_cy);
 
     if (cursor_cx > current_row.size()) {
@@ -200,7 +200,6 @@ void TFMInput::append_char(char c) {
                       current_row.substr(cursor_cx);
     }
 
-    m_rows.update(current_row, cursor.cy);
     m_cursor.move(KEY_RIGHT);
 
     current_rows = extract_current_rows();

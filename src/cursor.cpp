@@ -9,26 +9,23 @@
 #include "screen.hpp"
 
 void TFMCursor::page_scroll(int32_t direction) {
-    TFMCursorCords cursor = this->get();
     if (direction == KEY_NPAGE) {
-        if (cursor.cy < m_rows.size() - 1) {
-            cursor.cy++;
+        if (m_cursor.cy < m_rows.size() - 1) {
+            m_cursor.cy++;
         }
     } else if (direction == KEY_PPAGE) {
-        if (cursor.cy > 0) {
-            cursor.cy--;
+        if (m_cursor.cy > 0) {
+            m_cursor.cy--;
         }
     } else {
         throw std::invalid_argument("invalid key passed");
     }
-
-    this->set(cursor.cx, cursor.cy);
 }
 
 void TFMCursor::move(int32_t direction) {
     TFMScreenDetails screen = m_screen.get();
 
-    std::string current_row = m_rows.at(m_cursor.cy);
+    const std::string& current_row = m_rows.at(m_cursor.cy);
     size_t m_command_line_row_index = m_command_line.get_row_index();
 
     std::vector<std::string> rows_temp;
@@ -51,7 +48,6 @@ void TFMCursor::move(int32_t direction) {
                 m_cursor.cx--;
             } else if (m_cursor.cx == 0) {
                 m_cursor.cy--;
-                current_row = m_rows.at(m_cursor.cy);
                 m_cursor.cx = current_row.size() - 1;
             }
             break;
@@ -70,6 +66,7 @@ void TFMCursor::move(int32_t direction) {
             }
 
             rows_temp = m_command_history.display_upcoming();
+
             if (rows_temp.empty()) {
                 rows_temp = m_command_history.get_last_entry();
             }
@@ -77,7 +74,7 @@ void TFMCursor::move(int32_t direction) {
             for (size_t i = 0; i < rows_temp.size(); i++) {
                 tracked_data = {rows_temp[i].size(),
                                 i + m_command_line_row_index};
-                m_rows.update(rows_temp[i], tracked_data.second);
+                m_rows.at(tracked_data.second) = rows_temp[i];
             }
             this->set(tracked_data.first, tracked_data.second);
 

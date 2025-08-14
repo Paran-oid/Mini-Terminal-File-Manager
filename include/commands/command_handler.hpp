@@ -1,5 +1,4 @@
-#ifndef COMMAND_HANDLER_HPP
-#define COMMAND_HANDLER_HPP
+#pragma once
 
 #include "command_executor.hpp"
 #include "command_mapper.hpp"
@@ -50,5 +49,3 @@ class TFMCommandHandler {
 
     void process(const std::string& input);
 };
-
-#endif

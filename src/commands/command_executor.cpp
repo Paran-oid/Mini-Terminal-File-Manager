@@ -8,10 +8,10 @@
 
 #include "command_parser.hpp"
 #include "config.hpp"
-#include "core.hpp"
 #include "path.hpp"
 #include "rows.hpp"
 #include "screen.hpp"
+#include "utils.hpp"
 
 // TODO: make sure all flags are written for each command
 

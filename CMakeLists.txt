@@ -25,7 +25,7 @@ set(SRC
 	src/main.cpp
 	src/renderer.cpp
 	src/input.cpp
-	src/core.cpp
+	src/utils.cpp
 	src/screen.cpp
 	src/rows.cpp
 	src/cursor.cpp
