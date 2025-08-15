@@ -11,7 +11,7 @@ class TFMConfig {
     bool m_program_state;
 
    public:
-    TFMConfig() : m_command_state{false}, m_program_state{true} {
+    TFMConfig(){
         m_username = std::getenv("USER");
     };
     ~TFMConfig() = default;

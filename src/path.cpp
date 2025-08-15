@@ -17,56 +17,8 @@ void TFMPathHandler::set_path(const fs::path& path) {
     }
 }
 
-void TFMPathHandler::expand(std::string& path) {
-    if (path[0] != '~' || std::count(path.begin(), path.end(), '~') > 1) {
-        return;
-    }
-
-    str_replace_str_to_str(path, "~", m_home_dir);
-}
-
-void TFMPathHandler::update_home_dir() {
-    const std::string& path = m_current_path.string();
-
-    uint8_t counter = 0;
-    auto it = std::find_if(path.begin(), path.end(), [&counter](char c) {
-        if (c == '/') {
-            counter++;
-        }
-        if (counter == 3) {
-            return true;
-        } else {
-            return false;
-        }
-    });
-
-    if (it == path.end()) {
-        throw std::runtime_error("Invalid path passed");
-    }
-
-    m_home_dir =
-        path.substr(0, static_cast<size_t>(std::distance(path.begin(), it)));
-}
-
-std::vector<std::string> TFMPathHandler::find_matches(const std::string& row) {
-    if (row.empty()) return {};
-
-    std::vector<std::string> filenames, matches;
-    for (auto& entry : fs::directory_iterator(this->get_path())) {
-        filenames.push_back(entry.path().filename().string());
-    }
-
-    std::copy_if(filenames.begin(), filenames.end(),
-                 std::back_inserter(matches),
-                 [&row](const std::string& filename) {
-                     return str_num_common_chars(row, filename) > 0;
-                 });
-
-    return matches;
-}
-
 std::string TFMPathHandler::find_best_match(const std::string& row) {
-    // TODO: try to find in list of commands
+    // TODO(LATER): try to find in list of commands
 
     // !if not found in list of commands try to find matching directory
     std::vector<std::string> matches = this->find_matches(row);
@@ -99,4 +51,52 @@ std::string TFMPathHandler::find_best_match(const std::string& row) {
     }
 
     return max_it->first;
+}
+
+std::vector<std::string> TFMPathHandler::find_matches(const std::string& row) {
+    if (row.empty()) return {};
+
+    std::vector<std::string> filenames, matches;
+    for (auto& entry : fs::directory_iterator(this->get_path())) {
+        filenames.push_back(entry.path().filename().string());
+    }
+
+    std::copy_if(filenames.begin(), filenames.end(),
+                 std::back_inserter(matches),
+                 [&row](const std::string& filename) {
+                     return str_num_common_chars(row, filename) > 0;
+                 });
+
+    return matches;
+}
+
+void TFMPathHandler::update_home_dir() {
+    const std::string& path = m_current_path.string();
+
+    uint8_t counter = 0;
+    auto it = std::find_if(path.begin(), path.end(), [&counter](char c) {
+        if (c == '/') {
+            counter++;
+        }
+        if (counter == 3) {
+            return true;
+        } else {
+            return false;
+        }
+    });
+
+    if (it == path.end()) {
+        throw std::runtime_error("Invalid path passed");
+    }
+
+    m_home_dir =
+        path.substr(0, static_cast<size_t>(std::distance(path.begin(), it)));
+}
+
+void TFMPathHandler::expand(std::string& path) {
+    if (path[0] != '~' || std::count(path.begin(), path.end(), '~') > 1) {
+        return;
+    }
+
+    str_replace_str_to_str(path, "~", m_home_dir);
 }

@@ -22,10 +22,10 @@ set(CMAKE_BUILD_TYPE Debug)
 # SRC and include directories
 
 set(SRC 
+	utils/utils.cpp
 	src/main.cpp
 	src/renderer.cpp
 	src/input.cpp
-	src/utils.cpp
 	src/screen.cpp
 	src/rows.cpp
 	src/cursor.cpp
@@ -38,6 +38,7 @@ set(SRC
 
 )
 set(include_dir
+	${CMAKE_SOURCE_DIR}/utils
 	${CMAKE_SOURCE_DIR}/include
 	${CMAKE_SOURCE_DIR}/include/commands)
 

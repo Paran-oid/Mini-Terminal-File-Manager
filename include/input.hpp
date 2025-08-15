@@ -46,6 +46,7 @@ class TFMInput {
 
     void append_char(char c);
     void remove_char();
+    void path_insert();
     void process();
     void refresh();
     void enter();

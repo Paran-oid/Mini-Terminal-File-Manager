@@ -35,3 +35,7 @@ uint32_t str_num_common_chars(const std::string& str1,
     }
     return res;
 }
+bool is_seperator(char c) {
+    std::string separators = "!\"#$%&\'()*+,-./:;<=>?@[\\]^`{|}~";
+    return separators.find(c) != std::string::npos || c == ' ';
+}

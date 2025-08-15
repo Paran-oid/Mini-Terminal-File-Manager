@@ -46,7 +46,7 @@ class TFMApp {
           m_renderer{m_config, m_rows,   m_screen,
                      m_path,   m_cursor, m_command_line} {
         m_config.start_program();
-        m_config.enable_command();
+        m_config.disable_command();
     }
     ~TFMApp() {
         m_config.disable_command();
@@ -56,6 +56,7 @@ class TFMApp {
     void run() {
         m_screen.terminal_init();
 
+        m_input.path_insert();
         while (m_config.is_program_running()) {
             m_renderer.display();
             m_input.process();

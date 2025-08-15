@@ -34,11 +34,7 @@ class TFMRenderer {
           m_command_line{command_line} {}
     ~TFMRenderer() = default;
 
-    void buf_append(const std::string& data);
-    void buf_clear();
-
     void adjust_scroll();
-    void path_insert();
     void display();
     void draw();
 };

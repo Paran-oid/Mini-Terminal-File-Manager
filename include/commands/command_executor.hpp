@@ -40,6 +40,7 @@ class TFMCommandExecutor {
     void ls_func(const TFMCommand& cmd);
     void pwd_func(const TFMCommand& cmd);
     void whoami_func(const TFMCommand& cmd);
+    void cat_func(const TFMCommand& cmd);
 
     void cp_func(const TFMCommand& cmd);
     void mkdir_func(const TFMCommand& cmd);

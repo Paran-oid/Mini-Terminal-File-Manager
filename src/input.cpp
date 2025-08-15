@@ -39,6 +39,85 @@ std::string TFMInput::extract_input_buf() {
     return buf.str();
 }
 
+void TFMInput::append_char(char c) {
+    const TFMCursorCords& cursor = m_cursor.get();
+
+    size_t cursor_cx = cursor.cx;
+    size_t cursor_cy = cursor.cy;
+
+    std::vector<std::string> current_rows = extract_current_rows();
+    const std::string& cmd = extract_input_buf();
+    std::string& current_row = m_rows.at(cursor_cy);
+
+    if (cursor_cx > current_row.size()) {
+        current_row = current_row + (c);
+    } else {
+        current_row = current_row.substr(0, cursor_cx) + c +
+                      current_row.substr(cursor_cx);
+    }
+
+    m_cursor.move(KEY_RIGHT);
+
+    current_rows = extract_current_rows();
+    m_command_history.set_last_entry(current_rows);
+
+    this->refresh();
+}
+
+void TFMInput::remove_char() {
+    static bool callback = false;
+
+    if (m_cursor.is_cursor_at_command_line()) {
+        return;
+    }
+
+    // copy of cursor because we will need to get pos of cursors again later
+    TFMCursorCords cursor = m_cursor.get();
+
+    size_t cursor_cx = cursor.cx;
+    size_t cursor_cy = cursor.cy;
+
+    std::string& current_row = m_rows.at(cursor_cy);
+    if (cursor_cx == 0) {
+        m_cursor.move(KEY_LEFT);
+        cursor = m_cursor.get();
+        cursor_cx = cursor.cx;
+        cursor_cy = cursor.cy;
+
+        if (current_row.empty()) {
+            m_rows.remove(cursor_cy + 1);
+        }
+        callback = true;
+    } else {
+        if (callback) {
+            callback = false;
+            current_row = current_row.substr(0, cursor_cx);
+        } else {
+            current_row = current_row.substr(0, cursor_cx - 1) +
+                          current_row.substr(cursor_cx);
+        }
+        m_cursor.move(KEY_LEFT);
+    }
+
+    if (callback) {
+        remove_char();
+        m_cursor.move(KEY_RIGHT);
+    }
+
+    this->refresh();
+}
+
+void TFMInput::path_insert() {
+    std::string formatted_curr_path = m_path.get_path().string() + ":~$ ";
+    m_rows.append(formatted_curr_path);
+    m_cursor.set(formatted_curr_path.length(), m_rows.size() - 1);
+
+    const TFMCommandLineDetails new_command_line = {
+        formatted_curr_path, m_rows.size() - 1, formatted_curr_path.size()};
+
+    m_command_line.set(new_command_line);
+}
+
 void TFMInput::process() {
     int32_t c = getch();
 
@@ -85,6 +164,10 @@ void TFMInput::process() {
             m_cursor.move(c);
             break;
 
+        case KEY_CTRL_RIGHT:
+        case KEY_CTRL_LEFT:
+            m_cursor.super_move(c);
+            break;
         case '\n':
         case KEY_ENTER:
             this->enter();
@@ -120,9 +203,12 @@ void TFMInput::process() {
             this->append_char(static_cast<char>(c));
             break;
     }
-}
 
-// TODO: make ctrl + arrow work (LATER)
+    if (m_config.is_in_command()) {
+        path_insert();
+        m_config.disable_command();
+    }
+}
 
 void TFMInput::refresh() {
     if (m_rows.is_empty()) {
@@ -176,40 +262,14 @@ void TFMInput::refresh() {
 void TFMInput::enter() {
     const std::vector<std::string>& current_rows = extract_current_rows();
     const std::string& cmd = extract_input_buf();
-    // TODO: COULD HAVE PROBLEMS HERE
     m_command_history.add_previous(current_rows);
 
     m_config.enable_command();
     m_command_handler.process(cmd);
 }
 
-void TFMInput::append_char(char c) {
-    const TFMCursorCords& cursor = m_cursor.get();
-
-    size_t cursor_cx = cursor.cx;
-    size_t cursor_cy = cursor.cy;
-
-    std::vector<std::string> current_rows = extract_current_rows();
-    const std::string& cmd = extract_input_buf();
-    std::string& current_row = m_rows.at(cursor_cy);
-
-    if (cursor_cx > current_row.size()) {
-        current_row = current_row + (c);
-    } else {
-        current_row = current_row.substr(0, cursor_cx) + c +
-                      current_row.substr(cursor_cx);
-    }
-
-    m_cursor.move(KEY_RIGHT);
-
-    current_rows = extract_current_rows();
-    m_command_history.set_last_entry(current_rows);
-
-    this->refresh();
-}
-
 void TFMInput::match() {
-    // TODO: make this work just like in linux terminal
+    // TODO(LATER): make this work just like in linux terminal
 
     std::string input_buf = extract_input_buf();
     if (input_buf.empty()) {
@@ -226,47 +286,4 @@ void TFMInput::match() {
     m_rows.remove_from(m_command_line.get_row_index());
     m_rows.append(match);
     m_cursor.update();
-}
-
-void TFMInput::remove_char() {
-    static bool callback = false;
-
-    if (m_cursor.is_cursor_at_command_line()) {
-        return;
-    }
-
-    // copy of cursor because we will need to get pos of cursors again later
-    TFMCursorCords cursor = m_cursor.get();
-
-    size_t cursor_cx = cursor.cx;
-    size_t cursor_cy = cursor.cy;
-
-    std::string& current_row = m_rows.at(cursor_cy);
-    if (cursor_cx == 0) {
-        m_cursor.move(KEY_LEFT);
-        cursor = m_cursor.get();
-        cursor_cx = cursor.cx;
-        cursor_cy = cursor.cy;
-
-        if (current_row.empty()) {
-            m_rows.remove(cursor_cy + 1);
-        }
-        callback = true;
-    } else {
-        if (callback) {
-            callback = false;
-            current_row = current_row.substr(0, cursor_cx);
-        } else {
-            current_row = current_row.substr(0, cursor_cx - 1) +
-                          current_row.substr(cursor_cx);
-        }
-        m_cursor.move(KEY_LEFT);
-    }
-
-    if (callback) {
-        remove_char();
-        m_cursor.move(KEY_RIGHT);
-    }
-
-    this->refresh();
 }

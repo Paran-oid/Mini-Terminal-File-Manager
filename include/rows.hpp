@@ -10,7 +10,6 @@ class TFMScreen;
 
 class TFMRows {
    private:
-    // TODO: remove all references of other classes???
     TFMScreen& m_screen;
 
     std::vector<std::string> m_app_rows;

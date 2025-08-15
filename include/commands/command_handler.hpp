@@ -43,6 +43,8 @@ class TFMCommandHandler {
         m_mapper.register_command("touch", [this](const TFMCommand& cmd) {
             m_executor.touch_func(cmd);
         });
+        m_mapper.register_command(
+            "cat", [this](const TFMCommand& cmd) { m_executor.cat_func(cmd); });
     }
 
     ~TFMCommandHandler() = default;

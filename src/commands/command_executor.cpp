@@ -13,52 +13,6 @@
 #include "screen.hpp"
 #include "utils.hpp"
 
-// TODO: make sure all flags are written for each command
-
-void TFMCommandExecutor::manage_error(const TFMCommand& cmd,
-                                      TFMCommandErrorCode code,
-                                      std::string data) {
-    std::ostringstream message_buf;
-    switch (code) {
-        case INVALID_COMMAND:
-            message_buf << cmd.name << ": command not found";
-            break;
-        case UNAVAILABLE_DIRECTORY:
-            message_buf << cmd.name << ": " << cmd.positional[0]
-                        << ": no such file or directory";
-            break;
-        case MISSING_OPERAND:
-            message_buf << cmd.name << ": " << "missing operand";
-            break;
-        case MISSING_FILE_OPERAND:
-            if (cmd.positional.empty()) {
-                message_buf << cmd.name << ": " << "missing file operand";
-            } else {
-                message_buf << cmd.name << ": "
-                            << "missing file operand after: '"
-                            << cmd.positional[0] << "'";
-            }
-            break;
-        case MISSING_FILE_DESTINATION:
-            message_buf << cmd.name << ": "
-                        << "missing destination file operand after '"
-                        << cmd.positional[0] << "'";
-            break;
-        case FAILED_DIRECTORY_CREATION:
-            if (data.empty()) {
-                message_buf << cmd.name << ": " << "failed creating directory'";
-            } else {
-                message_buf << cmd.name << ": " << "failed creating directory '"
-                            << data;
-            }
-            break;
-        default:
-            break;
-    }
-
-    m_rows.append(message_buf.str());
-}
-
 void TFMCommandExecutor::clear_func(const TFMCommand& cmd) {
     (void)cmd;
     m_rows.clear();
@@ -97,72 +51,99 @@ void TFMCommandExecutor::cd_func(const TFMCommand& cmd) {
     m_path.set_path(target_path);
 }
 
+// TODO: make sure all flags are written for each command
+
 void TFMCommandExecutor::ls_func(const TFMCommand& cmd) {
-    (void)cmd;
-
-    // TODO: fix it sometimes not creating padding?
+    // handle flags
     bool show_hidden_files = false;
-    // bool long_listing = false;
-    // bool reverse_order = false;
-
     for (const std::string& arg : cmd.flags) {
         if (arg == "a") {
             show_hidden_files = true;
         }
-        // } else if (arg == "l") {
-        //     long_listing = true;
-        // } else if (arg == "r") {
-        //     reverse_order = true;
-        // }
     }
 
-    // TODO: make it check if there was a path entered else just process with ./
+    // initialize the map
+    bool single_path = false;
+    std::unordered_map<std::string, std::vector<std::string>> path_file_map;
+    if (cmd.positional.empty()) {
+        path_file_map[m_path.get_path()];
+        single_path = true;
+    } else {
+        for (const std::string& arg : cmd.positional) {
+            path_file_map[arg];
+        }
+    }
 
     // get all current files/folders
-    std::vector<std::string> filenames;
-    for (const auto& entry : fs::directory_iterator(m_path.get_path())) {
-        std::string filename = entry.path().filename();
-        if (!show_hidden_files && filename[0] == '.') {
+    for (auto& path_file : path_file_map) {
+        const std::string& path = path_file.first;
+        if (fs::is_regular_file(path)) {
+            path_file.second.push_back(path_file.first);
             continue;
         }
-        filenames.push_back(entry.path().filename().string());
+
+        for (const auto& entry : fs::directory_iterator(path)) {
+            std::string filename = entry.path().filename();
+            if (!show_hidden_files && filename[0] == '.') {
+                continue;
+            }
+            path_file.second.push_back(entry.path().filename().string());
+        }
     }
 
-    std::sort(filenames.begin(), filenames.end(),
-              [](const std::string& a, const std::string& b) { return a < b; });
+    // order the vectors of each path
+    for (auto& path_file : path_file_map) {
+        std::sort(
+            path_file.second.begin(), path_file.second.end(),
+            [](const std::string& a, const std::string& b) { return a < b; });
+    }
 
-    // get longest length
+    // get longest length (we will get pair iterator returned)
     auto it_max_length =
-        std::max_element(filenames.begin(), filenames.end(),
-                         [](const std::string& a, const std::string& b) {
-                             return a.size() < b.size();
+        std::max_element(path_file_map.begin(), path_file_map.end(),
+                         [](const auto& a, const auto& b) {
+                             return a.second.size() < b.second.size();
                          });
 
-    if (it_max_length == filenames.end()) {
+    if (it_max_length == path_file_map.end()) {
         return;
     }
 
-    size_t max_length = it_max_length->length();
-
+    size_t max_length = it_max_length->second.size();
     size_t cols = static_cast<size_t>(m_screen.get_cols() / max_length);
-    size_t rows = static_cast<size_t>(std::ceil(
-        static_cast<float>(filenames.size()) / static_cast<float>(cols)));
 
-    for (size_t i = 0; i < rows; i++) {
+    for (const auto& [path, filenames] : path_file_map) {
+        size_t rows = static_cast<size_t>(std::ceil(
+            static_cast<float>(filenames.size()) / static_cast<float>(cols)));
+        bool is_file_path = path == filenames[0] && filenames.size() == 1;
         std::ostringstream os;
-        for (size_t j = 0; j < cols; j++) {
-            size_t calculated_index = j * rows + i;
 
-            if (calculated_index >= filenames.size()) {
-                continue;
+        if (!single_path) {
+            os << path;
+
+            if (is_file_path) {
+                os << ":";
+                os << "\n";
             }
 
-            std::string filename =
-                ls_format(filenames[calculated_index], max_length);
-            os << filename;
+            os << "\n";
         }
-        m_rows.append(os.str());
-        os.clear();
+
+        for (size_t i = 0; i < rows; i++) {
+            for (size_t j = 0; j < cols; j++) {
+                size_t calculated_index = j * rows + i;
+
+                if (calculated_index >= filenames.size()) {
+                    continue;
+                }
+
+                std::string filename =
+                    ls_format(filenames[calculated_index], max_length);
+                os << filename;
+            }
+            m_rows.append(os.str());
+            os.clear();
+        }
     }
 }
 
@@ -176,7 +157,10 @@ void TFMCommandExecutor::whoami_func(const TFMCommand& cmd) {
     m_rows.append(m_config.get_username());
 }
 
-// TODO: make cat func
+void TFMCommandExecutor::cat_func(const TFMCommand& cmd) {
+    (void)cmd;
+    // TODO
+}
 
 void TFMCommandExecutor::cp_func(const TFMCommand& cmd) {
     (void)cmd;
@@ -244,4 +228,48 @@ void TFMCommandExecutor::touch_func(const TFMCommand& cmd) {
             ofs.close();
         }
     }
+}
+
+void TFMCommandExecutor::manage_error(const TFMCommand& cmd,
+                                      TFMCommandErrorCode code,
+                                      std::string data) {
+    std::ostringstream message_buf;
+    switch (code) {
+        case INVALID_COMMAND:
+            message_buf << cmd.name << ": command not found";
+            break;
+        case UNAVAILABLE_DIRECTORY:
+            message_buf << cmd.name << ": " << cmd.positional[0]
+                        << ": no such file or directory";
+            break;
+        case MISSING_OPERAND:
+            message_buf << cmd.name << ": " << "missing operand";
+            break;
+        case MISSING_FILE_OPERAND:
+            if (cmd.positional.empty()) {
+                message_buf << cmd.name << ": " << "missing file operand";
+            } else {
+                message_buf << cmd.name << ": "
+                            << "missing file operand after: '"
+                            << cmd.positional[0] << "'";
+            }
+            break;
+        case MISSING_FILE_DESTINATION:
+            message_buf << cmd.name << ": "
+                        << "missing destination file operand after '"
+                        << cmd.positional[0] << "'";
+            break;
+        case FAILED_DIRECTORY_CREATION:
+            if (data.empty()) {
+                message_buf << cmd.name << ": " << "failed creating directory'";
+            } else {
+                message_buf << cmd.name << ": " << "failed creating directory '"
+                            << data;
+            }
+            break;
+        default:
+            break;
+    }
+
+    m_rows.append(message_buf.str());
 }

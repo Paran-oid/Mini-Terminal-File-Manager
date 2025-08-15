@@ -29,8 +29,8 @@ void TFMScreen::update_dimensions(int32_t sig) {
             "TFMScreen: error initializing screen dimensions");
     }
 
-    m_screen.rows = static_cast<size_t>(rows);
-    m_screen.cols = static_cast<size_t>(cols);
+    m_app_screen.rows = static_cast<size_t>(rows);
+    m_app_screen.cols = static_cast<size_t>(cols);
 }
 
 void TFMScreen::terminal_init() {

@@ -1,7 +1,8 @@
 # TASKS
 
-***TODO: write documentation***
-***TODO: Order functions in cpp files like they are in their headers (make sure everything is organized)***
+TODO: make it return empty if u redo many times and reach end.
+TODO: make it follow SOLID principles.
+TODO: once finished implementing everything, make sure what is inside TOCHECK.md already done.
 
 ✅ 1. Core File Navigation
 
@@ -286,4 +287,3 @@ Logging	spdlog, loguru
 Testing	Catch2, GoogleTest
 Argument parsing	cxxopts, CLI11
 
-make it return empty if u undo many times and reach end.

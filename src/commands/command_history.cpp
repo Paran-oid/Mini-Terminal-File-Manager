@@ -1,5 +1,21 @@
 #include "command_history.hpp"
 
+std::vector<std::string> TFMCommandHistory::display_previous() {
+    return has_previous() ? m_previous_stack.top() : std::vector<std::string>();
+}
+
+std::vector<std::string> TFMCommandHistory::display_upcoming() {
+    return has_upcoming() ? m_upcoming_stack.top() : std::vector<std::string>();
+}
+
+void TFMCommandHistory::add_previous(const std::vector<std::string>& cmd) {
+    m_previous_stack.push(cmd);
+}
+
+void TFMCommandHistory::add_upcoming(const std::vector<std::string>& cmd) {
+    m_upcoming_stack.push(cmd);
+}
+
 std::vector<std::string> TFMCommandHistory::pop_previous() {
     if (!has_previous()) return {};
     std::vector<std::string> res = m_previous_stack.top();
@@ -12,14 +28,6 @@ std::vector<std::string> TFMCommandHistory::pop_upcoming() {
     std::vector<std::string> res = m_upcoming_stack.top();
     m_upcoming_stack.pop();
     return res;
-}
-
-void TFMCommandHistory::add_previous(const std::vector<std::string>& cmd) {
-    m_previous_stack.push(cmd);
-}
-
-void TFMCommandHistory::add_upcoming(const std::vector<std::string>& cmd) {
-    m_upcoming_stack.push(cmd);
 }
 
 void TFMCommandHistory::undo() {
@@ -37,12 +45,4 @@ void TFMCommandHistory::redo() {
 void TFMCommandHistory::clear() {
     while (!m_upcoming_stack.empty()) m_upcoming_stack.pop();
     while (!m_previous_stack.empty()) m_previous_stack.pop();
-}
-
-std::vector<std::string> TFMCommandHistory::display_previous() {
-    return has_previous() ? m_previous_stack.top() : std::vector<std::string>();
-}
-
-std::vector<std::string> TFMCommandHistory::display_upcoming() {
-    return has_upcoming() ? m_upcoming_stack.top() : std::vector<std::string>();
 }
