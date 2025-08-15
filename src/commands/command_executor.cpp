@@ -21,7 +21,7 @@ void TFMCommandExecutor::manage_error(const TFMCommand& cmd,
     std::ostringstream message_buf;
     switch (code) {
         case INVALID_COMMAND:
-            message_buf << cmd.name << ": cmd not found";
+            message_buf << cmd.name << ": command not found";
             break;
         case UNAVAILABLE_DIRECTORY:
             message_buf << cmd.name << ": " << cmd.positional[0]
