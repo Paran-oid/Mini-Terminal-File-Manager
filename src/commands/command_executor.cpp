@@ -51,8 +51,6 @@ void TFMCommandExecutor::cd_func(const TFMCommand& cmd) {
     m_path.set_path(target_path);
 }
 
-// TODO: make sure all flags are written for each command
-
 void TFMCommandExecutor::ls_func(const TFMCommand& cmd) {
     // handle flags
     bool show_hidden_files = false;
@@ -112,6 +110,26 @@ void TFMCommandExecutor::ls_func(const TFMCommand& cmd) {
     size_t max_length = it_max_length->second.size();
     size_t cols = static_cast<size_t>(m_screen.get_cols() / max_length);
 
+    // TODO: continue working on this feature of showing multiple paths
+    /*
+
+            EXAMPLE:
+        aziz@aziz-Vostro-3525:~/Documents/Coding/Projects/Embedded/STM Card
+        Manager/Core/Src$ ls ../ main.c ./ main.c
+
+        ../:
+        Inc  Src  Startup
+
+        ./:
+        main.c  stm32l4xx_hal_msp.c  stm32l4xx_it.c  syscalls.c  sysmem.c
+        system_stm32l4xx.c
+        aziz@aziz-Vostro-3525:~/Documents/Coding/Projects/Embedded/STM Card
+        Manager/Core/Src$ ls main.c  stm32l4xx_hal_msp.c  stm32l4xx_it.c
+       syscalls.c sysmem.c  system_stm32l4xx.c
+        aziz@aziz-Vostro-3525:~/Documents/Coding/Projects/Embedded/STM Card
+        Manager/Core/Src$
+
+    */
     for (const auto& [path, filenames] : path_file_map) {
         size_t rows = static_cast<size_t>(std::ceil(
             static_cast<float>(filenames.size()) / static_cast<float>(cols)));
@@ -146,6 +164,8 @@ void TFMCommandExecutor::ls_func(const TFMCommand& cmd) {
         }
     }
 }
+
+// TODO: make sure all flags are written for each command
 
 void TFMCommandExecutor::pwd_func(const TFMCommand& cmd) {
     (void)cmd;

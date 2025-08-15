@@ -1,8 +1,10 @@
 # TASKS
 
-TODO: make it return empty if u redo many times and reach end.
-TODO: make it follow SOLID principles.
-TODO: once finished implementing everything, make sure what is inside TOCHECK.md already done.
+## LATER LIST
+
+- make it return empty if u redo many times and reach end.
+- make it follow SOLID principles.
+- once finished implementing everything, make sure what is inside TOCHECK.md already done.
 
 ✅ 1. Core File Navigation
 
