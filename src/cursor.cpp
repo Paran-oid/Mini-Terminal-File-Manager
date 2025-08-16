@@ -8,20 +8,6 @@
 #include "renderer.hpp"
 #include "utils.hpp"
 
-void TFMCursor::page_scroll(int32_t direction) {
-    if (direction == KEY_NPAGE) {
-        if (m_app_cursor.cy < m_rows.size() - 1) {
-            m_app_cursor.cy++;
-        }
-    } else if (direction == KEY_PPAGE) {
-        if (m_app_cursor.cy > 0) {
-            m_app_cursor.cy--;
-        }
-    } else {
-        throw std::invalid_argument("invalid key passed");
-    }
-}
-
 void TFMCursor::move(int32_t direction) {
     TFMScreenDetails screen = m_screen.get();
 
@@ -127,6 +113,12 @@ void TFMCursor::super_move(int32_t key) {
             throw std::runtime_error(
                 "TFMCursor::super_move: invalid key passed");
             break;
+    }
+}
+
+void TFMCursor::move_to_end() {
+    while (!is_cursor_at_end()) {
+        this->move(KEY_RIGHT);
     }
 }
 

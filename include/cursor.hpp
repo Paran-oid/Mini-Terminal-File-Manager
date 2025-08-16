@@ -38,9 +38,9 @@ class TFMCursor {
     const TFMCursorCords& get() const { return m_app_cursor; }
     void set(size_t cx, size_t cy) { m_app_cursor = {cx, cy}; }
 
-    void page_scroll(int32_t direction);
     void move(int32_t direction);
     void super_move(int32_t key);
+    void move_to_end();
     void update();
 
     bool is_cursor_at_last_row() {

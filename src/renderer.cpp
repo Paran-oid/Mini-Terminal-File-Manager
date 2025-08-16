@@ -16,7 +16,7 @@ void TFMRenderer::adjust_scroll() {
     size_t screen_rows = m_screen.get_rows();
 
     if (cursor.cy < screen_row_off) {
-        screen_row_off = cursor.cy;
+        // screen_row_off = cursor.cy;
     } else if (cursor.cy >= screen_rows + screen_row_off) {
         screen_row_off = cursor.cy - screen_rows + 1;
     }

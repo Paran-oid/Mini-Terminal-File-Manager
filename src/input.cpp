@@ -119,15 +119,20 @@ void TFMInput::path_insert() {
 }
 
 void TFMInput::process() {
+    static int32_t previous_c;
     int32_t c = getch();
 
     TFMCursorCords cursor = m_cursor.get();
+    int32_t updated_row_off;
 
-    size_t screen_row_off = m_screen.get_row_off();
-    size_t screen_rows = m_screen.get_rows();
-    size_t times = screen_rows;
+    if (c != KEY_PPAGE && c != KEY_NPAGE &&
+        (previous_c == KEY_PPAGE || previous_c == KEY_NPAGE)) {
+        m_cursor.move_to_end();
+    }
 
-    if (c == CTRL_KEY('q') || c == CTRL_KEY('Q')) m_config.end_program();
+    if (c == CTRL_KEY('q') || c == CTRL_KEY('Q')) {
+        m_config.end_program();
+    }
 
     switch (c) {
             /*
@@ -142,19 +147,12 @@ void TFMInput::process() {
 
         case KEY_PPAGE:
         case KEY_NPAGE:
-            if (c == KEY_PPAGE) {
-                cursor.cy = screen_row_off;
-            } else {
-                cursor.cy = screen_rows + screen_row_off + 1;
-                if (cursor.cy > m_rows.size()) {
-                    cursor.cy = m_rows.size() - 1;
-                }
+            updated_row_off = static_cast<int32_t>(
+                (m_screen.get_row_off() - m_screen.get_rows()));
+            if (updated_row_off < 0) {
+                updated_row_off = 0;
             }
-
-            while (times--) {
-                m_cursor.page_scroll(c);
-            }
-            m_screen.set_row_off(screen_row_off);
+            m_screen.set_row_off(static_cast<size_t>(updated_row_off));
             break;
 
         case KEY_UP:
@@ -208,6 +206,7 @@ void TFMInput::process() {
         path_insert();
         m_config.disable_command();
     }
+    previous_c = c;
 }
 
 void TFMInput::refresh() {

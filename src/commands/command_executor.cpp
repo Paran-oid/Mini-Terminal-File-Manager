@@ -13,6 +13,8 @@
 #include "screen.hpp"
 #include "utils.hpp"
 
+#define LS_PADDING 2
+
 void TFMCommandExecutor::clear_func(const TFMCommand& cmd) {
     (void)cmd;
     m_rows.clear();
@@ -67,8 +69,13 @@ void TFMCommandExecutor::ls_func(const TFMCommand& cmd) {
         path_file_map[m_path.get_path()];
         single_path = true;
     } else {
-        for (const std::string& arg : cmd.positional) {
-            path_file_map[arg];
+        if (cmd.positional.size() == 1) {
+            path_file_map[cmd.positional[0]];
+            single_path = true;
+        } else {
+            for (const std::string& arg : cmd.positional) {
+                path_file_map[arg];
+            }
         }
     }
 
@@ -96,73 +103,60 @@ void TFMCommandExecutor::ls_func(const TFMCommand& cmd) {
             [](const std::string& a, const std::string& b) { return a < b; });
     }
 
-    // get longest length (we will get pair iterator returned)
-    auto it_max_length =
-        std::max_element(path_file_map.begin(), path_file_map.end(),
-                         [](const auto& a, const auto& b) {
-                             return a.second.size() < b.second.size();
-                         });
+    for (auto it = path_file_map.begin(); it != path_file_map.end(); it++) {
+        // get longest length (we will get pair iterator returned)
 
-    if (it_max_length == path_file_map.end()) {
-        return;
-    }
+        auto& path = it->first;
+        auto& filenames = it->second;
+        bool is_last_iterator = (std::next(it) == path_file_map.end());
 
-    size_t max_length = it_max_length->second.size();
-    size_t cols = static_cast<size_t>(m_screen.get_cols() / max_length);
+        auto it_max_length =
+            std::max_element(filenames.begin(), filenames.end(),
+                             [](const auto& a, const auto& b) {
+                                 return a.length() < b.length();
+                             });
 
-    // TODO: continue working on this feature of showing multiple paths
-    /*
+        if (it_max_length == filenames.end()) {
+            return;
+        }
 
-            EXAMPLE:
-        aziz@aziz-Vostro-3525:~/Documents/Coding/Projects/Embedded/STM Card
-        Manager/Core/Src$ ls ../ main.c ./ main.c
-
-        ../:
-        Inc  Src  Startup
-
-        ./:
-        main.c  stm32l4xx_hal_msp.c  stm32l4xx_it.c  syscalls.c  sysmem.c
-        system_stm32l4xx.c
-        aziz@aziz-Vostro-3525:~/Documents/Coding/Projects/Embedded/STM Card
-        Manager/Core/Src$ ls main.c  stm32l4xx_hal_msp.c  stm32l4xx_it.c
-       syscalls.c sysmem.c  system_stm32l4xx.c
-        aziz@aziz-Vostro-3525:~/Documents/Coding/Projects/Embedded/STM Card
-        Manager/Core/Src$
-
-    */
-    for (const auto& [path, filenames] : path_file_map) {
+        size_t max_length = it_max_length->length() + LS_PADDING;
+        size_t cols = static_cast<size_t>(m_screen.get_cols() / max_length);
         size_t rows = static_cast<size_t>(std::ceil(
             static_cast<float>(filenames.size()) / static_cast<float>(cols)));
         bool is_file_path = path == filenames[0] && filenames.size() == 1;
-        std::ostringstream os;
+        std::ostringstream row_builder;
 
-        if (!single_path) {
-            os << path;
+        if (!single_path && !is_file_path) {
+            m_rows.append(path + ":");
+        }
 
-            if (is_file_path) {
-                os << ":";
-                os << "\n";
-            }
-
-            os << "\n";
+        if (is_file_path) {
+            continue;
         }
 
         for (size_t i = 0; i < rows; i++) {
             for (size_t j = 0; j < cols; j++) {
                 size_t calculated_index = j * rows + i;
-
                 if (calculated_index >= filenames.size()) {
                     continue;
                 }
 
                 std::string filename =
                     ls_format(filenames[calculated_index], max_length);
-                os << filename;
+                row_builder << filename;
             }
-            m_rows.append(os.str());
-            os.clear();
+            m_rows.append(row_builder.str());
+
+            row_builder.str("");
+            row_builder.clear();
+        }
+
+        if (!is_last_iterator) {
+            m_rows.append("");
         }
     }
+
 }
 
 // TODO: make sure all flags are written for each command
