@@ -30,6 +30,7 @@ set(SRC
 	src/rows.cpp
 	src/cursor.cpp
 	src/path.cpp
+	src/dialog.cpp
 	src/commands/command_history.cpp
 	src/commands/command_handler.cpp
 	src/commands/command_executor.cpp

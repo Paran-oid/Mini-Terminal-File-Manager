@@ -8,6 +8,7 @@
 
 #include "command_parser.hpp"
 #include "config.hpp"
+#include "cursor.hpp"
 #include "path.hpp"
 #include "rows.hpp"
 #include "screen.hpp"
@@ -18,6 +19,8 @@
 void TFMCommandExecutor::clear_func(const TFMCommand& cmd) {
     (void)cmd;
     m_rows.clear();
+    m_cursor.set(0, 0);
+    m_screen.set_row_off(0);
 }
 
 void TFMCommandExecutor::cd_func(const TFMCommand& cmd) {
@@ -55,12 +58,9 @@ void TFMCommandExecutor::cd_func(const TFMCommand& cmd) {
 
 void TFMCommandExecutor::ls_func(const TFMCommand& cmd) {
     // handle flags
-    bool show_hidden_files = false;
-    for (const std::string& arg : cmd.flags) {
-        if (arg == "a") {
-            show_hidden_files = true;
-        }
-    }
+    bool show_hidden_files =
+        std::any_of(cmd.flags.begin(), cmd.flags.end(),
+                    [](const std::string& flag) { return flag == "a"; });
 
     // initialize the map
     bool single_path = false;
@@ -70,11 +70,20 @@ void TFMCommandExecutor::ls_func(const TFMCommand& cmd) {
         single_path = true;
     } else {
         if (cmd.positional.size() == 1) {
-            path_file_map[cmd.positional[0]];
+            const std::string main_path = cmd.positional[0];
+            if (!fs::exists(main_path)) {
+                manage_error(cmd, UNAVAILABLE_DIRECTORY, {main_path});
+                return;
+            }
+            path_file_map[main_path] = {};
             single_path = true;
         } else {
             for (const std::string& arg : cmd.positional) {
-                path_file_map[arg];
+                if (!fs::exists(arg)) {
+                    manage_error(cmd, UNAVAILABLE_DIRECTORY, {arg});
+                } else {
+                    path_file_map[arg] = {};
+                }
             }
         }
     }
@@ -92,7 +101,7 @@ void TFMCommandExecutor::ls_func(const TFMCommand& cmd) {
             if (!show_hidden_files && filename[0] == '.') {
                 continue;
             }
-            path_file.second.push_back(entry.path().filename().string());
+            path_file.second.push_back(filename);
         }
     }
 
@@ -124,15 +133,18 @@ void TFMCommandExecutor::ls_func(const TFMCommand& cmd) {
         size_t cols = static_cast<size_t>(m_screen.get_cols() / max_length);
         size_t rows = static_cast<size_t>(std::ceil(
             static_cast<float>(filenames.size()) / static_cast<float>(cols)));
-        bool is_file_path = path == filenames[0] && filenames.size() == 1;
+        bool is_file = fs::is_regular_file(path);
         std::ostringstream row_builder;
 
-        if (!single_path && !is_file_path) {
+        if (!single_path && !is_file) {
             m_rows.append(path + ":");
-        }
-
-        if (is_file_path) {
-            continue;
+        } else {
+            if (!single_path) {
+                m_rows.append(path);
+            }
+            if (is_file) {
+                continue;
+            }
         }
 
         for (size_t i = 0; i < rows; i++) {
@@ -156,10 +168,7 @@ void TFMCommandExecutor::ls_func(const TFMCommand& cmd) {
             m_rows.append("");
         }
     }
-
 }
-
-// TODO: make sure all flags are written for each command
 
 void TFMCommandExecutor::pwd_func(const TFMCommand& cmd) {
     (void)cmd;
@@ -173,36 +182,83 @@ void TFMCommandExecutor::whoami_func(const TFMCommand& cmd) {
 
 void TFMCommandExecutor::cat_func(const TFMCommand& cmd) {
     (void)cmd;
-    // TODO
+    // TODO FEATURE
 }
 
-void TFMCommandExecutor::cp_func(const TFMCommand& cmd) {
-    (void)cmd;
+// TODO: make sure all flags are written for each command
 
+void TFMCommandExecutor::cp_func(const TFMCommand& cmd) {
     if (cmd.positional.empty() || cmd.positional.size() == 1) {
         manage_error(cmd, MISSING_FILE_OPERAND);
         return;
     }
 
+    bool is_interactive = false;
+    bool is_forced = false;
+    bool is_src_newer_than_dest = false;
     bool is_recursive = false;
 
-    // TODO: make this work
-    for (const std::string& arg : cmd.flags) {
-        if (arg == "r") {
+    for (const std::string& flag : cmd.flags) {
+        if (flag == "i") {
+            // TODO
+            /*
+            if there is a file that will be over-written and this flag exists
+            show the dialog first
+            */
+            is_interactive = true;
+        } else if (flag == "f") {
+            is_forced = true;
+        } else if (flag == "u") {
+            is_src_newer_than_dest = true;
+        } else if (flag == "r") {
             is_recursive = true;
         }
     }
 
-    std::string src = cmd.positional[0];
-    std::string dst = cmd.positional[1];
-    if (!fs::exists(src)) {
-        manage_error(cmd, MISSING_FILE_DESTINATION);
-        return;
+    (void)is_interactive;
+    (void)is_forced;
+    (void)is_src_newer_than_dest;
+
+    std::vector<std::string> src_paths;
+
+    for (size_t i = 0; i < cmd.positional.size() - 1; i++) {
+        const std::string& arg = cmd.positional[i];
+        if (!fs::exists(arg)) {
+            manage_error(cmd, MISSING_FILE_DESTINATION, {arg});
+        } else {
+            src_paths.push_back(fs::absolute(arg).string());
+        }
     }
 
-    fs::copy(
-        src, dst,
-        is_recursive ? fs::copy_options::recursive : fs::copy_options::none);
+    std::string dst = fs::absolute(cmd.positional.back()).string();
+
+    // fs::path allows / to just add / to path
+
+    for (const auto& src_path : src_paths) {
+        fs::path src(src_path);
+        fs::path target = dst;
+
+        if (fs::is_directory(src_path)) {
+            if (!is_recursive) {
+                manage_error(cmd, FLAG_NOT_SPECIFIED, {"r", target.filename()});
+                continue;
+            }
+            target /= src.filename();
+            fs::create_directories(target);
+
+            for (const auto& entry : fs::recursive_directory_iterator(src)) {
+                const auto& path = entry.path();
+                fs::path relative = fs::relative(path, src);
+                fs::copy(path, target / relative,
+                         fs::copy_options::overwrite_existing |
+                             (is_recursive ? fs::copy_options::recursive
+                                           : fs::copy_options::none));
+            }
+        } else {
+            fs::copy_file(src, target / src.filename(),
+                          fs::copy_options::overwrite_existing);
+        }
+    }
 }
 
 void TFMCommandExecutor::mkdir_func(const TFMCommand& cmd) {
@@ -215,7 +271,7 @@ void TFMCommandExecutor::mkdir_func(const TFMCommand& cmd) {
         try {
             fs::create_directories(str_path);
         } catch (const fs::filesystem_error& e) {
-            manage_error(cmd, FAILED_DIRECTORY_CREATION, arg);
+            manage_error(cmd, FAILED_DIRECTORY_CREATION, {arg});
         }
     }
 }
@@ -246,14 +302,19 @@ void TFMCommandExecutor::touch_func(const TFMCommand& cmd) {
 
 void TFMCommandExecutor::manage_error(const TFMCommand& cmd,
                                       TFMCommandErrorCode code,
-                                      std::string data) {
+                                      const std::vector<std::string> data) {
     std::ostringstream message_buf;
     switch (code) {
         case INVALID_COMMAND:
             message_buf << cmd.name << ": command not found";
             break;
         case UNAVAILABLE_DIRECTORY:
-            message_buf << cmd.name << ": " << cmd.positional[0]
+            if (data.empty()) {
+                throw std::runtime_error(
+                    "TFMCommandExecutor::manage_error: expected data to be "
+                    "passed");
+            }
+            message_buf << cmd.name << ": " << data[0]
                         << ": no such file or directory";
             break;
         case MISSING_OPERAND:
@@ -263,23 +324,43 @@ void TFMCommandExecutor::manage_error(const TFMCommand& cmd,
             if (cmd.positional.empty()) {
                 message_buf << cmd.name << ": " << "missing file operand";
             } else {
+                if (data.empty()) {
+                    throw std::runtime_error(
+                        "TFMCommandExecutor::manage_error: expected data to be "
+                        "passed");
+                }
                 message_buf << cmd.name << ": "
-                            << "missing file operand after: '"
-                            << cmd.positional[0] << "'";
+                            << "missing file operand after: '" << data[0]
+                            << "'";
             }
             break;
         case MISSING_FILE_DESTINATION:
+            if (data.empty()) {
+                throw std::runtime_error(
+                    "TFMCommandExecutor::manage_error: expected data to be "
+                    "passed");
+            }
             message_buf << cmd.name << ": "
-                        << "missing destination file operand after '"
-                        << cmd.positional[0] << "'";
+                        << "missing destination file operand after '" << data[0]
+                        << "'";
             break;
         case FAILED_DIRECTORY_CREATION:
             if (data.empty()) {
                 message_buf << cmd.name << ": " << "failed creating directory'";
             } else {
                 message_buf << cmd.name << ": " << "failed creating directory '"
-                            << data;
+                            << data[0];
             }
+            break;
+        case FLAG_NOT_SPECIFIED:
+            if (data.empty() || data.size() < 2) {
+                throw std::runtime_error(
+                    "TFMCommandExecutor::manage_error: expected data to be "
+                    "passed");
+            }
+            message_buf << cmd.name << ": -" << data[0]
+                        << " not specified; omitting directory: " << data[1];
+
             break;
         default:
             break;

@@ -6,6 +6,7 @@
 #include "command_line.hpp"
 #include "config.hpp"
 #include "cursor.hpp"
+#include "dialog.hpp"
 #include "input.hpp"
 #include "path.hpp"
 #include "renderer.hpp"
@@ -24,6 +25,7 @@ class TFMApp {
     TFMCursor m_cursor;
     TFMInput m_input;
     TFMRenderer m_renderer;
+    TFMDialog m_dialog;
 
    public:
     TFMApp()
@@ -33,7 +35,6 @@ class TFMApp {
           m_path{},
           m_command_history{},
           m_rows{m_screen},
-          m_command_handler{m_path, m_rows, m_screen, m_config},
           m_cursor{m_command_line, m_rows, m_screen, m_command_history},
           m_input{m_config,
                   m_cursor,
@@ -44,7 +45,11 @@ class TFMApp {
                   m_command_handler,
                   m_path},
           m_renderer{m_config, m_rows,   m_screen,
-                     m_path,   m_cursor, m_command_line} {
+                     m_path,   m_cursor, m_command_line},
+          m_dialog{m_rows, m_renderer},
+          m_command_handler{m_path, m_rows, m_screen, m_config, m_cursor},
+
+    {
         m_config.start_program();
         m_config.disable_command();
     }

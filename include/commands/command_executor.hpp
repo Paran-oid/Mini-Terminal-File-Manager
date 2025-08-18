@@ -11,6 +11,8 @@ class TFMPathHandler;
 class TFMRows;
 class TFMScreen;
 class TFMConfig;
+class TFMCursor;
+class TFMDialog;
 
 enum TFMCommandErrorCode {
     INVALID_COMMAND,
@@ -19,6 +21,7 @@ enum TFMCommandErrorCode {
     MISSING_FILE_OPERAND,
     MISSING_FILE_DESTINATION,
     FAILED_DIRECTORY_CREATION,
+    FLAG_NOT_SPECIFIED,
     NONE
 };
 
@@ -28,11 +31,18 @@ class TFMCommandExecutor {
     TFMRows& m_rows;
     TFMScreen& m_screen;
     TFMConfig& m_config;
+    TFMCursor& m_cursor;
+    TFMDialog& m_dialog;
 
    public:
     TFMCommandExecutor(TFMPathHandler& path, TFMRows& rows, TFMScreen& screen,
-                       TFMConfig& config)
-        : m_path{path}, m_rows{rows}, m_screen(screen), m_config{config} {}
+                       TFMConfig& config, TFMCursor& cursor, TFMDialog& dialog)
+        : m_path{path},
+          m_rows{rows},
+          m_screen(screen),
+          m_config{config},
+          m_cursor{cursor},
+          m_dialog{dialog} {}
     ~TFMCommandExecutor() = default;
 
     void clear_func(const TFMCommand& cmd);
@@ -47,5 +57,5 @@ class TFMCommandExecutor {
     void touch_func(const TFMCommand& cmd);
 
     void manage_error(const TFMCommand& cmd, TFMCommandErrorCode code,
-                      std::string data = "");
+                      const std::vector<std::string> data = {});
 };

@@ -21,8 +21,10 @@ class TFMCommandHandler {
 
    public:
     TFMCommandHandler(TFMPathHandler& path, TFMRows& rows, TFMScreen& screen,
-                      TFMConfig& config)
-        : m_parser(), m_mapper(), m_executor(path, rows, screen, config) {
+                      TFMConfig& config, TFMCursor& cursor)
+        : m_parser(),
+          m_mapper(),
+          m_executor(path, rows, screen, config, cursor) {
         m_mapper.register_command(
             "cd", [this](const TFMCommand& cmd) { m_executor.cd_func(cmd); });
         m_mapper.register_command(

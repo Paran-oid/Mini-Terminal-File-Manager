@@ -14,6 +14,7 @@ class TFMCommandHistory;
 class TFMScreen;
 class TFMCommandHandler;
 class TFMPathHandler;
+class TFMRenderer;
 
 class TFMInput {
    private:
@@ -25,12 +26,13 @@ class TFMInput {
     TFMScreen& m_screen;
     TFMCommandHandler& m_command_handler;
     TFMPathHandler& m_path;
+    TFMRenderer& m_renderer;
 
    public:
     TFMInput(TFMConfig& config, TFMCursor& cursor, TFMRows& rows,
              TFMCommandLine& command_line, TFMCommandHistory& command_history,
              TFMScreen& screen, TFMCommandHandler& command_handler,
-             TFMPathHandler& path)
+             TFMPathHandler& path, TFMRenderer& renderer)
         : m_config{config},
           m_cursor{cursor},
           m_rows{rows},
@@ -38,7 +40,8 @@ class TFMInput {
           m_command_history{command_history},
           m_screen{screen},
           m_command_handler{command_handler},
-          m_path{path} {}
+          m_path{path},
+          m_renderer{renderer} {}
     ~TFMInput() = default;
 
     std::vector<std::string> extract_current_rows();

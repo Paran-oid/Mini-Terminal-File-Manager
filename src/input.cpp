@@ -259,6 +259,11 @@ void TFMInput::refresh() {
 }
 
 void TFMInput::enter() {
+    if (m_cursor.get().cx == 0) {
+        m_cursor.move(KEY_LEFT);
+        m_rows.remove_last();
+    }
+
     const std::vector<std::string>& current_rows = extract_current_rows();
     const std::string& cmd = extract_input_buf();
     m_command_history.add_previous(current_rows);

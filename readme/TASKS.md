@@ -26,6 +26,8 @@
 
 Copy files and directories (with overwrite prompt)
 
+Work on Cat command
+
 Move/rename files and directories
 
 Delete files

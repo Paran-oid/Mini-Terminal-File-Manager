@@ -24,6 +24,8 @@ class TFMCursor {
     TFMScreen& m_screen;
     TFMCommandHistory& m_command_history;
 
+    // TODO: handle bug when screen is too small and cursor bugs out
+
    public:
     TFMCursor(TFMCommandLine& command_line, TFMRows& rows, TFMScreen& screen,
               TFMCommandHistory& command_history)

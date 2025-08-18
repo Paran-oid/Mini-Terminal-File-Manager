@@ -57,6 +57,7 @@ void TFMCursor::move(int32_t direction) {
                 rows_temp = m_command_history.get_last_entry();
             }
 
+            // TODO: fix problem where it crashes at the at(idx) func
             for (size_t i = 0; i < rows_temp.size(); i++) {
                 tracked_data = {rows_temp[i].size(),
                                 i + m_command_line_row_index};
@@ -76,6 +77,7 @@ void TFMCursor::move(int32_t direction) {
 void TFMCursor::super_move(int32_t key) {
     char c = m_rows.at(m_app_cursor.cy)[m_app_cursor.cx];
     switch (key) {
+            // TODO: fix this getting stuck in an infinite while loop
         case KEY_CTRL_RIGHT:
             // move if current char is a separator
             c = m_rows.at(m_app_cursor.cy)[m_app_cursor.cx];
