@@ -15,7 +15,9 @@ void TFMCursor::move(int32_t direction) {
     size_t m_command_line_row_index = m_command_line.get_row_index();
 
     std::vector<std::string> rows_temp;
-    std::pair<size_t, size_t> tracked_data;
+
+    // the size of the current row and its row index
+    std::pair<size_t, size_t> row_info;
 
     switch (direction) {
         case KEY_RIGHT:
@@ -52,18 +54,20 @@ void TFMCursor::move(int32_t direction) {
             }
 
             rows_temp = m_command_history.display_upcoming();
+            if (rows_temp.empty()) {
+                return;
+            }
 
             if (rows_temp.empty()) {
                 rows_temp = m_command_history.get_last_entry();
             }
 
-            // TODO: fix problem where it crashes at the at(idx) func
+            m_rows.remove_from(m_command_line.get_row_index());
             for (size_t i = 0; i < rows_temp.size(); i++) {
-                tracked_data = {rows_temp[i].size(),
-                                i + m_command_line_row_index};
-                m_rows.at(tracked_data.second) = rows_temp[i];
+                row_info = {rows_temp[i].size(), i + m_command_line_row_index};
+                m_rows.append(rows_temp[i]);
             }
-            this->set(tracked_data.first, tracked_data.second);
+            this->set(row_info.first, row_info.second);
 
             break;
         default:
@@ -77,7 +81,6 @@ void TFMCursor::move(int32_t direction) {
 void TFMCursor::super_move(int32_t key) {
     char c = m_rows.at(m_app_cursor.cy)[m_app_cursor.cx];
     switch (key) {
-            // TODO: fix this getting stuck in an infinite while loop
         case KEY_CTRL_RIGHT:
             // move if current char is a separator
             c = m_rows.at(m_app_cursor.cy)[m_app_cursor.cx];
@@ -89,9 +92,8 @@ void TFMCursor::super_move(int32_t key) {
                 c = m_rows.at(m_app_cursor.cy)[m_app_cursor.cx];
                 if (is_seperator(c)) {
                     break;
-                } else {
-                    this->move(KEY_RIGHT);
                 }
+                this->move(KEY_RIGHT);
             }
             break;
 
@@ -106,9 +108,8 @@ void TFMCursor::super_move(int32_t key) {
                 c = m_rows.at(m_app_cursor.cy)[m_app_cursor.cx];
                 if (is_seperator(c)) {
                     break;
-                } else {
-                    this->move(KEY_LEFT);
                 }
+                this->move(KEY_LEFT);
             }
             break;
         default:

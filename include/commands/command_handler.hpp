@@ -12,6 +12,7 @@ class TFMPathHandler;
 class TFMRows;
 class TFMScreen;
 class TFMConfig;
+class TFMDialog;
 
 class TFMCommandHandler {
    private:
@@ -21,10 +22,10 @@ class TFMCommandHandler {
 
    public:
     TFMCommandHandler(TFMPathHandler& path, TFMRows& rows, TFMScreen& screen,
-                      TFMConfig& config, TFMCursor& cursor)
+                      TFMConfig& config, TFMCursor& cursor, TFMDialog& dialog)
         : m_parser(),
           m_mapper(),
-          m_executor(path, rows, screen, config, cursor) {
+          m_executor(path, rows, screen, config, cursor, dialog) {
         m_mapper.register_command(
             "cd", [this](const TFMCommand& cmd) { m_executor.cd_func(cmd); });
         m_mapper.register_command(

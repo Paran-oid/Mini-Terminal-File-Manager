@@ -16,6 +16,8 @@ class TFMCommandHandler;
 class TFMPathHandler;
 class TFMRenderer;
 
+enum TFMMessageType { M_COMMAND_LINE_TYPE, M_OTHER, M_NONE };
+
 class TFMInput {
    private:
     TFMConfig& m_config;
@@ -26,13 +28,12 @@ class TFMInput {
     TFMScreen& m_screen;
     TFMCommandHandler& m_command_handler;
     TFMPathHandler& m_path;
-    TFMRenderer& m_renderer;
 
    public:
     TFMInput(TFMConfig& config, TFMCursor& cursor, TFMRows& rows,
              TFMCommandLine& command_line, TFMCommandHistory& command_history,
              TFMScreen& screen, TFMCommandHandler& command_handler,
-             TFMPathHandler& path, TFMRenderer& renderer)
+             TFMPathHandler& path)
         : m_config{config},
           m_cursor{cursor},
           m_rows{rows},
@@ -40,8 +41,7 @@ class TFMInput {
           m_command_history{command_history},
           m_screen{screen},
           m_command_handler{command_handler},
-          m_path{path},
-          m_renderer{renderer} {}
+          m_path{path} {}
     ~TFMInput() = default;
 
     std::vector<std::string> extract_current_rows();
@@ -49,7 +49,7 @@ class TFMInput {
 
     void append_char(char c);
     void remove_char();
-    void path_insert();
+    void commandline_insert(const std::string& content, TFMMessageType type);
     void process();
     void refresh();
     void enter();

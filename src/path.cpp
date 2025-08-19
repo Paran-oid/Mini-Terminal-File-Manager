@@ -18,7 +18,7 @@ void TFMPathHandler::set_path(const fs::path& path) {
 }
 
 std::string TFMPathHandler::find_best_match(const std::string& row) {
-    // TODO(LATER): try to find in list of commands
+    // TODO: (low priority) try to find in list of commands
 
     // !if not found in list of commands try to find matching directory
     std::vector<std::string> matches = this->find_matches(row);

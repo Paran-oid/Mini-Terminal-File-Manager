@@ -30,7 +30,9 @@ std::string TFMInput::extract_input_buf() {
     std::ostringstream buf;
     size_t current_index = m_command_line.get_row_index();
 
+    // TODO: make it extract even for small screens
     buf << m_rows.at(current_index++).substr(m_command_line.get_size());
+    buf << m_command_line.get_data();
 
     while (current_index < m_rows.size()) {
         buf << m_rows.at(current_index++);
@@ -107,15 +109,24 @@ void TFMInput::remove_char() {
     this->refresh();
 }
 
-void TFMInput::path_insert() {
-    std::string formatted_curr_path = m_path.get_path().string() + ":~$ ";
-    m_rows.append(formatted_curr_path);
-    m_cursor.set(formatted_curr_path.length(), m_rows.size() - 1);
+void TFMInput::commandline_insert(const std::string& content,
+                                  TFMMessageType type) {
+    std::string formatted;
+    if (type == TFMMessageType::M_COMMAND_LINE_TYPE) {
+        // formatted = m_path.get_path().string() + ":~$ ";
+        formatted = content + ":~$ ";
+    } else {
+        formatted = content;
+    }
+
+    m_rows.append(formatted);
+    m_cursor.set(formatted.length() % m_screen.get_cols(), m_rows.size() - 1);
 
     const TFMCommandLineDetails new_command_line = {
-        formatted_curr_path, m_rows.size() - 1, formatted_curr_path.size()};
+        formatted, m_rows.size() - 1, formatted.size()};
 
     m_command_line.set(new_command_line);
+    m_config.disable_command();
 }
 
 void TFMInput::process() {
@@ -203,8 +214,7 @@ void TFMInput::process() {
     }
 
     if (m_config.is_in_command()) {
-        path_insert();
-        m_config.disable_command();
+        commandline_insert(m_path.get_path().string(), M_COMMAND_LINE_TYPE);
     }
     previous_c = c;
 }
@@ -266,14 +276,16 @@ void TFMInput::enter() {
 
     const std::vector<std::string>& current_rows = extract_current_rows();
     const std::string& cmd = extract_input_buf();
-    m_command_history.add_previous(current_rows);
+    if (!cmd.empty()) {
+        m_command_history.add_previous(current_rows);
+    }
 
     m_config.enable_command();
     m_command_handler.process(cmd);
 }
 
 void TFMInput::match() {
-    // TODO(LATER): make this work just like in linux terminal
+    // TODO: (low priority) make this work just like in linux terminal
 
     std::string input_buf = extract_input_buf();
     if (input_buf.empty()) {

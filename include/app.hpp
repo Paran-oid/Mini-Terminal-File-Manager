@@ -23,8 +23,8 @@ class TFMApp {
     TFMRows m_rows;
     TFMCommandHandler m_command_handler;
     TFMCursor m_cursor;
-    TFMInput m_input;
     TFMRenderer m_renderer;
+    TFMInput m_input;
     TFMDialog m_dialog;
 
    public:
@@ -35,7 +35,12 @@ class TFMApp {
           m_path{},
           m_command_history{},
           m_rows{m_screen},
+          m_command_handler{m_path,   m_rows,   m_screen,
+                            m_config, m_cursor, m_dialog},
           m_cursor{m_command_line, m_rows, m_screen, m_command_history},
+
+          m_renderer{m_config, m_rows,   m_screen,
+                     m_path,   m_cursor, m_command_line},
           m_input{m_config,
                   m_cursor,
                   m_rows,
@@ -44,15 +49,11 @@ class TFMApp {
                   m_screen,
                   m_command_handler,
                   m_path},
-          m_renderer{m_config, m_rows,   m_screen,
-                     m_path,   m_cursor, m_command_line},
-          m_dialog{m_rows, m_renderer},
-          m_command_handler{m_path, m_rows, m_screen, m_config, m_cursor},
-
-    {
+          m_dialog{m_renderer, m_config, m_input} {
         m_config.start_program();
         m_config.disable_command();
     }
+
     ~TFMApp() {
         m_config.disable_command();
         m_config.end_program();
@@ -61,7 +62,8 @@ class TFMApp {
     void run() {
         m_screen.terminal_init();
 
-        m_input.path_insert();
+        m_input.commandline_insert(m_path.get_path().string(),
+                                   TFMMessageType::M_COMMAND_LINE_TYPE);
         while (m_config.is_program_running()) {
             m_renderer.display();
             m_input.process();

@@ -54,8 +54,6 @@ class TFMCursor {
         ;
     }
     bool is_cursor_at_end() {
-        return m_app_cursor.cy ==
-                   (m_rows.size() - m_screen.get_row_off() - 1) &&
-               m_app_cursor.cx == m_rows.at(m_app_cursor.cy).size();
+        return m_app_cursor.cx >= m_rows.at(m_app_cursor.cy).size();
     }
 };
