@@ -296,7 +296,27 @@ void TFMCommandExecutor::cp_func(const TFMCommand& cmd) {
     }
 }
 
-void cp_func(const TFMCommand& cmd) {}
+void mv_func(const TFMCommand& cmd) {
+    // syntax
+    // mv [options] src dst
+
+    // rename file: mv file1.txt file2.txt
+    // move file: file.txt path/to/dst/
+    // rename and move: mv file.txt /path/to/destination/newname.txt
+    // mv myfolder/ /new/location/
+    // mv oldfolder newfolder
+    // mv file1.txt file2.txt file3.txt /backup/
+
+    /*
+    Info about flags:
+    Useful Options
+        Option	Meaning
+        -i	Interactive: asks before overwriting existing files
+        -f	Force: overwrite without asking (default)
+        -n	No-clobber: don’t overwrite existing files
+        -v	Verbose: shows what is happening
+    */
+}
 
 void TFMCommandExecutor::mkdir_func(const TFMCommand& cmd) {
     if (cmd.positional.empty()) {
