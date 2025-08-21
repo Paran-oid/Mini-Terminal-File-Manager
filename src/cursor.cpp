@@ -12,7 +12,7 @@ void TFMCursor::move(int32_t direction) {
     TFMScreenDetails screen = m_screen.get();
 
     const std::string& current_row = m_rows.at(m_app_cursor.cy);
-    size_t m_command_line_row_index = m_command_line.get_row_index();
+    size_t m_command_line_row_index = m_command_line.get_last_row_index();
 
     std::vector<std::string> rows_temp;
 
@@ -62,7 +62,7 @@ void TFMCursor::move(int32_t direction) {
                 rows_temp = m_command_history.get_last_entry();
             }
 
-            m_rows.remove_from(m_command_line.get_row_index());
+            m_rows.remove_from(m_command_line.get_last_row_index());
             for (size_t i = 0; i < rows_temp.size(); i++) {
                 row_info = {rows_temp[i].size(), i + m_command_line_row_index};
                 m_rows.append(rows_temp[i]);

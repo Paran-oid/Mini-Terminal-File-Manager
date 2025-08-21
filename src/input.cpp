@@ -17,7 +17,7 @@
 
 std::vector<std::string> TFMInput::extract_current_rows() {
     std::vector<std::string> res;
-    size_t current_index = m_command_line.get_row_index();
+    size_t current_index = m_command_line.get_last_row_index();
 
     while (current_index < m_rows.size()) {
         res.push_back(m_rows.at(current_index++));
@@ -28,16 +28,16 @@ std::vector<std::string> TFMInput::extract_current_rows() {
 
 std::string TFMInput::extract_input_buf() {
     std::ostringstream buf;
-    size_t current_index = m_command_line.get_row_index();
+    size_t current_index = m_command_line.get_last_row_index();
 
-    // TODO: make it extract even for small screens
-    buf << m_rows.at(current_index++).substr(m_command_line.get_size());
-    buf << m_command_line.get_data();
+    buf << m_rows.at(current_index++)
+               .substr(m_command_line.get_size() % m_screen.get_cols());
 
     while (current_index < m_rows.size()) {
         buf << m_rows.at(current_index++);
     }
 
+    std::string temp = buf.str();
     return buf.str();
 }
 
@@ -191,7 +191,7 @@ void TFMInput::process() {
             return remove_char();
 
         case KEY_HOME:
-            if (cursor.cy == m_command_line.get_row_index()) {
+            if (cursor.cy == m_command_line.get_last_row_index()) {
                 m_cursor.set(m_command_line.get_size(), cursor.cy);
             } else {
                 m_cursor.set(0, cursor.cy);
@@ -225,7 +225,7 @@ void TFMInput::refresh() {
     }
 
     size_t cols = m_screen.get_cols();
-    size_t command_line_index = m_command_line.get_row_index();
+    size_t command_line_index = m_command_line.get_last_row_index();
 
     // handle underflow if any
     for (size_t i = command_line_index; i < m_rows.size() - 1; i++) {
@@ -299,7 +299,7 @@ void TFMInput::match() {
     }
 
     match = m_path.get_path().string() + ":~$ " + match;
-    m_rows.remove_from(m_command_line.get_row_index());
+    m_rows.remove_from(m_command_line.get_last_row_index());
     m_rows.append(match);
     m_cursor.update();
 }

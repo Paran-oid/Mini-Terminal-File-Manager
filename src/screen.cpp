@@ -31,16 +31,19 @@ void TFMScreen::update_dimensions(int32_t sig) {
 
     m_app_screen.rows = static_cast<size_t>(rows);
     m_app_screen.cols = static_cast<size_t>(cols);
+
+    wresize(stdscr, rows, cols);
+    wrefresh(stdscr);
 }
 
 void TFMScreen::terminal_init() {
+    ms_instance = this;
+
     initscr();
     raw();
 
     keypad(stdscr, TRUE);
     noecho();
-
-    ms_instance = this;
 
     std::signal(SIGINT, ms_instance->handle_exit);
     std::signal(SIGWINCH, ms_instance->window_size_update);

@@ -24,8 +24,6 @@ class TFMCursor {
     TFMScreen& m_screen;
     TFMCommandHistory& m_command_history;
 
-    // TODO: handle bug when screen is too small and cursor bugs out
-
    public:
     TFMCursor(TFMCommandLine& command_line, TFMRows& rows, TFMScreen& screen,
               TFMCommandHistory& command_history)
@@ -49,7 +47,7 @@ class TFMCursor {
         return m_app_cursor.cy == m_rows.size() - 1;
     }
     bool is_cursor_at_command_line() {
-        return m_app_cursor.cy == m_command_line.get_row_index() &&
+        return m_app_cursor.cy == m_command_line.get_last_row_index() &&
                m_app_cursor.cx == m_command_line.get_data().length();
         ;
     }
