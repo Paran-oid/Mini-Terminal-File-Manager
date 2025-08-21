@@ -27,9 +27,6 @@ class TFMPathHandler {
         m_previous_path = previous_path;
     }
 
-    std::string find_best_match(const std::string& row);
-    std::vector<std::string> find_matches(const std::string& row);
-
     void update_home_dir();
     void expand(std::string& path);
 };

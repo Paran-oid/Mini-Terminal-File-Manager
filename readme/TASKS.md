@@ -24,9 +24,7 @@
 
 📄 2. File Operations
 
-Copy files and directories (with overwrite prompt)
-
-Work on Cat command
+~~Copy files and directories (with overwrite prompt)~~
 
 Move/rename files and directories
 
@@ -40,7 +38,7 @@ Create new directories
 
 Duplicate file
 
-    File touch (update modification timestamp)
+    File touch (update modification timestamp along with all it's flags)
 
 📦 3. File Metadata and Info
 
@@ -144,7 +142,9 @@ Change file permissions (chmod)
 
 Change file owner/group (needs root)
 
-    Check if user has access rights
+	Check if user has access rights
+
+make it match just like in usual linux terminal when user enters tab once and work on feature of clicking tab two times too.
 
 🗑️ 11. Trash System
 

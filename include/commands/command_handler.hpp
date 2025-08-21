@@ -48,6 +48,8 @@ class TFMCommandHandler {
         });
         m_mapper.register_command(
             "cat", [this](const TFMCommand& cmd) { m_executor.cat_func(cmd); });
+        m_mapper.register_command(
+            "mv", [this](const TFMCommand& cmd) { m_executor.mv_func(cmd); });
     }
 
     ~TFMCommandHandler() = default;

@@ -64,6 +64,53 @@ void TFMRows::remove_from(size_t index) {
                      m_app_rows.end());
 }
 
+void TFMRows::refresh(size_t starting_index) {
+    if (this->is_empty()) {
+        return;
+    }
+
+    size_t cols = m_screen.get_cols();
+
+    // handle underflow if any
+    for (size_t i = starting_index; i < this->size() - 1; i++) {
+        std::string& row = this->at(i);
+        size_t len = row.length();
+
+        if (len < cols && i + 1 < this->size()) {
+            std::string& next_row = this->at(i + 1);
+            size_t needed = cols - len;
+
+            std::string to_add = next_row.substr(0, needed);
+            row += to_add;
+            next_row = next_row.substr(needed);
+
+            if (next_row.empty()) {
+                this->remove_last();
+            }
+        }
+    }
+
+    // handle overflow if any
+    for (size_t i = starting_index; i < this->size(); i++) {
+        std::string& row = this->at(i);
+        size_t len = row.length();
+
+        int32_t diff = static_cast<int32_t>(cols) - static_cast<int32_t>(len);
+
+        // user appended text to a full string
+        if (diff < 0) {
+            diff = -diff;
+            std::string extra = row.substr(cols, static_cast<size_t>(diff));
+            row = row.substr(0, cols);
+            if (this->size() < i + 1) {
+                this->append("");
+            }
+            std::string& last_row = this->back();
+            last_row = extra + last_row;
+        }
+    }
+}
+
 void TFMRows::clear() { m_app_rows.clear(); }
 
 bool TFMRows::is_empty() { return this->size() == 0; }

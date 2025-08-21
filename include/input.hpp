@@ -51,7 +51,5 @@ class TFMInput {
     void remove_char();
     void commandline_insert(const std::string& content, TFMMessageType type);
     void process();
-    void refresh();
     void enter();
-    void match();
 };

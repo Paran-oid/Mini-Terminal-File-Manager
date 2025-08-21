@@ -33,6 +33,8 @@ class TFMRows {
     void remove(size_t index);
     void remove_last();
     void remove_from(size_t index);
+
+    void refresh(size_t starting_index);
     void clear();
 
     bool is_empty();

@@ -182,10 +182,7 @@ void TFMCommandExecutor::whoami_func(const TFMCommand& cmd) {
     m_rows.append(m_config.get_username());
 }
 
-void TFMCommandExecutor::cat_func(const TFMCommand& cmd) {
-    (void)cmd;
-    // TODO FEATURE
-}
+void TFMCommandExecutor::cat_func(const TFMCommand& cmd) { (void)cmd; }
 
 void TFMCommandExecutor::cp_func(const TFMCommand& cmd) {
     if (cmd.positional.empty() || cmd.positional.size() == 1) {
@@ -299,6 +296,8 @@ void TFMCommandExecutor::cp_func(const TFMCommand& cmd) {
     }
 }
 
+void cp_func(const TFMCommand& cmd) {}
+
 void TFMCommandExecutor::mkdir_func(const TFMCommand& cmd) {
     if (cmd.positional.empty()) {
         manage_error(cmd, MISSING_OPERAND);
@@ -316,8 +315,6 @@ void TFMCommandExecutor::mkdir_func(const TFMCommand& cmd) {
 }
 
 void TFMCommandExecutor::touch_func(const TFMCommand& cmd) {
-    // TODO: (low priority) write all flags for touch
-
     if (cmd.positional.empty()) {
         manage_error(cmd, MISSING_FILE_OPERAND);
         return;

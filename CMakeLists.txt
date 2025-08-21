@@ -9,6 +9,10 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# enable signals to be intercepted while debugging
+add_compile_options(-g -O0)   # Debug info, no optimizations
+add_link_options(-g -O0)
+
 add_compile_options(-fsanitize=address)
 add_link_options(-fsanitize=address)
 

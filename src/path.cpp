@@ -17,59 +17,6 @@ void TFMPathHandler::set_path(const fs::path& path) {
     }
 }
 
-std::string TFMPathHandler::find_best_match(const std::string& row) {
-    // TODO: (low priority) try to find in list of commands
-
-    // !if not found in list of commands try to find matching directory
-    std::vector<std::string> matches = this->find_matches(row);
-
-    if (matches.empty()) {
-        return row;
-    }
-
-    std::unordered_map<std::string, uint32_t> match_map;
-
-    for (const auto& match : matches) {
-        match_map[match] = str_num_common_chars(row, match);
-    }
-
-    auto max_it = std::max_element(
-        match_map.begin(), match_map.end(),
-        [](const auto& a, const auto& b) { return a.second < b.second; });
-
-    if (max_it == match_map.end()) {
-        // map is empty???
-        return row;
-    }
-
-    auto count_max = std::count_if(
-        match_map.begin(), match_map.end(),
-        [&max_it](const auto& item) { return item.second == max_it->second; });
-
-    if (count_max > 1) {
-        return row;
-    }
-
-    return max_it->first;
-}
-
-std::vector<std::string> TFMPathHandler::find_matches(const std::string& row) {
-    if (row.empty()) return {};
-
-    std::vector<std::string> filenames, matches;
-    for (auto& entry : fs::directory_iterator(this->get_path())) {
-        filenames.push_back(entry.path().filename().string());
-    }
-
-    std::copy_if(filenames.begin(), filenames.end(),
-                 std::back_inserter(matches),
-                 [&row](const std::string& filename) {
-                     return str_num_common_chars(row, filename) > 0;
-                 });
-
-    return matches;
-}
-
 void TFMPathHandler::update_home_dir() {
     const std::string& path = m_current_path.string();
 

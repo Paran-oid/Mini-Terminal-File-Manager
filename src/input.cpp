@@ -51,7 +51,7 @@ void TFMInput::append_char(char c) {
     const std::string& cmd = extract_input_buf();
     std::string& current_row = m_rows.at(cursor_cy);
 
-    if (cursor_cx > current_row.size()) {
+    if (cursor_cx >= current_row.size()) {
         current_row = current_row + (c);
     } else {
         current_row = current_row.substr(0, cursor_cx) + c +
@@ -63,7 +63,8 @@ void TFMInput::append_char(char c) {
     current_rows = extract_current_rows();
     m_command_history.set_last_entry(current_rows);
 
-    this->refresh();
+    // m_rows.refresh(m_command_line.get_last_row_index());
+    m_rows.refresh(0);
 }
 
 void TFMInput::remove_char() {
@@ -106,7 +107,8 @@ void TFMInput::remove_char() {
         m_cursor.move(KEY_RIGHT);
     }
 
-    this->refresh();
+    // m_rows.refresh(m_command_line.get_last_row_index());
+    m_rows.refresh(0);
 }
 
 void TFMInput::commandline_insert(const std::string& content,
@@ -132,7 +134,6 @@ void TFMInput::commandline_insert(const std::string& content,
 void TFMInput::process() {
     static int32_t previous_c;
     int32_t c = getch();
-
     TFMCursorCords cursor = m_cursor.get();
     int32_t updated_row_off;
 
@@ -146,14 +147,8 @@ void TFMInput::process() {
     }
 
     switch (c) {
-            /*
-            !make it show all matches if tab was clicked twice (used
-            !timeout)
-            */
-
         case KEY_BTAB:
         case '\t':
-            this->match();
             break;
 
         case KEY_PPAGE:
@@ -219,55 +214,6 @@ void TFMInput::process() {
     previous_c = c;
 }
 
-void TFMInput::refresh() {
-    if (m_rows.is_empty()) {
-        return;
-    }
-
-    size_t cols = m_screen.get_cols();
-    size_t command_line_index = m_command_line.get_last_row_index();
-
-    // handle underflow if any
-    for (size_t i = command_line_index; i < m_rows.size() - 1; i++) {
-        std::string& row = m_rows.at(i);
-        size_t len = row.length();
-
-        if (len < cols && i + 1 < m_rows.size()) {
-            std::string& next_row = m_rows.at(i + 1);
-            size_t needed = cols - len;
-
-            std::string to_add = next_row.substr(0, needed);
-            row += to_add;
-            next_row = next_row.substr(needed);
-
-            if (next_row.empty()) {
-                m_rows.remove_last();
-            }
-        }
-    }
-
-    // handle overflow if any
-    for (size_t i = command_line_index; i < m_rows.size(); i++) {
-        std::string& row = m_rows.at(i);
-        size_t len = row.length();
-
-        int32_t diff =
-            std::abs(static_cast<int32_t>(cols) - static_cast<int32_t>(len));
-
-        // user appended text to a full string
-        if (diff < 0) {
-            diff = -diff;
-            std::string extra = row.substr(cols, static_cast<size_t>(diff));
-            row = row.substr(0, cols);
-            if (m_rows.size() < i + 1) {
-                m_rows.append("");
-            }
-            std::string& last_row = m_rows.back();
-            last_row = extra + last_row;
-        }
-    }
-}
-
 void TFMInput::enter() {
     if (m_cursor.get().cx == 0) {
         m_cursor.move(KEY_LEFT);
@@ -282,24 +228,4 @@ void TFMInput::enter() {
 
     m_config.enable_command();
     m_command_handler.process(cmd);
-}
-
-void TFMInput::match() {
-    // TODO: (low priority) make this work just like in linux terminal
-
-    std::string input_buf = extract_input_buf();
-    if (input_buf.empty()) {
-        return;
-    }
-
-    std::string match = m_path.find_best_match(input_buf);
-
-    if (match == input_buf) {
-        return;
-    }
-
-    match = m_path.get_path().string() + ":~$ " + match;
-    m_rows.remove_from(m_command_line.get_last_row_index());
-    m_rows.append(match);
-    m_cursor.update();
 }

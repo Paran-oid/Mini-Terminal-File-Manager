@@ -5,6 +5,8 @@
 #include <csignal>
 #include <stdexcept>
 
+#include "renderer.hpp"
+
 TFMScreen* TFMScreen::ms_instance = nullptr;
 
 void TFMScreen::handle_exit(int32_t sig) {
@@ -21,6 +23,12 @@ void TFMScreen::window_size_update(int32_t sig) {
 
 void TFMScreen::update_dimensions(int32_t sig) {
     (void)sig;
+
+    // update the internal structure of ncurses
+    endwin();
+    refresh();
+
+    // get current rows and cols
     int32_t rows, cols;
     getmaxyx(stdscr, rows, cols);
 
@@ -34,6 +42,8 @@ void TFMScreen::update_dimensions(int32_t sig) {
 
     wresize(stdscr, rows, cols);
     wrefresh(stdscr);
+
+    this->change_occured = true;
 }
 
 void TFMScreen::terminal_init() {

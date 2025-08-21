@@ -11,7 +11,8 @@
 void TFMCursor::move(int32_t direction) {
     TFMScreenDetails screen = m_screen.get();
 
-    const std::string& current_row = m_rows.at(m_app_cursor.cy);
+    size_t current_index = m_app_cursor.cy;
+    std::string current_row = m_rows.at(current_index);
     size_t m_command_line_row_index = m_command_line.get_last_row_index();
 
     std::vector<std::string> rows_temp;
@@ -36,6 +37,12 @@ void TFMCursor::move(int32_t direction) {
                 m_app_cursor.cx--;
             } else if (m_app_cursor.cx == 0) {
                 m_app_cursor.cy--;
+                if (current_index == 0) {
+                    throw std::runtime_error(
+                        "TFMCursor::move: can't decrment current_index when it "
+                        "is 0");
+                }
+                current_row = m_rows.at(--current_index);
                 m_app_cursor.cx = current_row.size() - 1;
             }
             break;
