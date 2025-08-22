@@ -430,9 +430,24 @@ void TFMCommandExecutor::rm_func(const TFMCommand& cmd) {
             is_forced = true;
         }
     }
-}
 
-void TFMCommandExecutor::rm_func(const TFMCommand& cmd) { (void)cmd; }
+    if (cmd.positional.empty()) {
+        manage_error(cmd, MISSING_FILE_OPERAND);
+        return;
+    }
+
+    for (const auto& path : cmd.positional) {
+        if (!fs::exists(path)) {
+            manage_error(cmd, UNAVAILABLE_DIRECTORY);
+            continue;
+        }
+
+        if (fs::is_directory(path) && !is_recursive) {
+            manage_error(cmd, EXPECTED_RECURSIVE_FLAG);
+            continue;
+        }
+    }
+}
 
 void TFMCommandExecutor::mkdir_func(const TFMCommand& cmd) {
     if (cmd.positional.empty()) {
@@ -481,6 +496,15 @@ void TFMCommandExecutor::manage_error(const TFMCommand& cmd,
     switch (code) {
         case INVALID_COMMAND:
             message_buf << cmd.name << ": command not found";
+            break;
+        case UNAVAILABE_DIRECTORY_OR_FILE:
+            if (data.empty()) {
+                throw std::runtime_error(
+                    "TFMCommandExecutor::manage_error: expected data to be "
+                    "passed");
+            }
+            message_buf << cmd.name << ": " << data[0]
+                        << ": no such file or directory";
             break;
         case UNAVAILABLE_DIRECTORY:
             if (data.empty()) {
@@ -581,6 +605,15 @@ void TFMCommandExecutor::manage_error(const TFMCommand& cmd,
             }
             message_buf << cmd.name << ": cannot overwrite non-directory '"
                         << data[0] << "' with directory '" << data[1] << "'";
+        case EXPECTED_RECURSIVE_FLAG:
+            if (data.empty()) {
+                throw std::runtime_error(
+                    "TFMCommandExecutor::manage_error: expected data to be "
+                    "passed");
+            }
+            message_buf << cmd.name << ": cannot remove '" << data[0]
+                        << "/': is a directory";
+            break;
         default:
             break;
     }
