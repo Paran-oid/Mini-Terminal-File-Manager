@@ -59,6 +59,7 @@ class TFMCommandExecutor {
 
     void cp_func(const TFMCommand& cmd);
     void mv_func(const TFMCommand& cmd);
+    void rm_func(const TFMCommand& cmd);
     void mkdir_func(const TFMCommand& cmd);
     void touch_func(const TFMCommand& cmd);
 

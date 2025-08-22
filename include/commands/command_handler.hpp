@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unordered_map>
+
 #include "command_executor.hpp"
 #include "command_mapper.hpp"
 #include "command_parser.hpp"
@@ -14,6 +16,8 @@ class TFMScreen;
 class TFMConfig;
 class TFMDialog;
 
+using fn = void (TFMCommandExecutor::*)(const TFMCommand&);
+
 class TFMCommandHandler {
    private:
     TFMCommandParser m_parser;
@@ -26,30 +30,24 @@ class TFMCommandHandler {
         : m_parser(),
           m_mapper(),
           m_executor(path, rows, screen, config, cursor, dialog) {
-        m_mapper.register_command(
-            "cd", [this](const TFMCommand& cmd) { m_executor.cd_func(cmd); });
-        m_mapper.register_command(
-            "ls", [this](const TFMCommand& cmd) { m_executor.ls_func(cmd); });
-        m_mapper.register_command(
-            "pwd", [this](const TFMCommand& cmd) { m_executor.pwd_func(cmd); });
-        m_mapper.register_command("clear", [this](const TFMCommand& cmd) {
-            m_executor.clear_func(cmd);
-        });
-        m_mapper.register_command("whoami", [this](const TFMCommand& cmd) {
-            m_executor.whoami_func(cmd);
-        });
-        m_mapper.register_command(
-            "cp", [this](const TFMCommand& cmd) { m_executor.cp_func(cmd); });
-        m_mapper.register_command("mkdir", [this](const TFMCommand& cmd) {
-            m_executor.mkdir_func(cmd);
-        });
-        m_mapper.register_command("touch", [this](const TFMCommand& cmd) {
-            m_executor.touch_func(cmd);
-        });
-        m_mapper.register_command(
-            "cat", [this](const TFMCommand& cmd) { m_executor.cat_func(cmd); });
-        m_mapper.register_command(
-            "mv", [this](const TFMCommand& cmd) { m_executor.mv_func(cmd); });
+        std::unordered_map<std::string, fn> commands_map{
+            {"cd", &TFMCommandExecutor::cd_func},
+            {"ls", &TFMCommandExecutor::ls_func},
+            {"pwd", &TFMCommandExecutor::pwd_func},
+            {"clear", &TFMCommandExecutor::clear_func},
+            {"whoami", &TFMCommandExecutor::whoami_func},
+            {"cp", &TFMCommandExecutor::cp_func},
+            {"mkdir", &TFMCommandExecutor::mkdir_func},
+            {"touch", &TFMCommandExecutor::touch_func},
+            {"cat", &TFMCommandExecutor::cat_func},
+            {"mv", &TFMCommandExecutor::mv_func}};
+
+        for (auto& [name, func_ptr] : commands_map) {
+            m_mapper.register_command(name,
+                                      [this, func_ptr](const TFMCommand& cmd) {
+                                          (m_executor.*func_ptr)(cmd);
+                                      });
+        }
     }
 
     ~TFMCommandHandler() = default;

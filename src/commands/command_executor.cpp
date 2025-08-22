@@ -192,8 +192,8 @@ void TFMCommandExecutor::cp_func(const TFMCommand& cmd) {
     }
 
     bool is_interactive = false;
-    bool is_forced = false;
-    bool is_src_newer_than_dest = false;
+    __attribute__((unused)) bool is_forced = false;
+    __attribute__((unused)) bool is_src_newer_than_dest = false;
     bool is_recursive = false;
 
     for (const std::string& flag : cmd.flags) {
@@ -400,6 +400,39 @@ void TFMCommandExecutor::mv_func(const TFMCommand& cmd) {
         m_rows.append(os.str());
     }
 }
+
+void TFMCommandExecutor::rm_func(const TFMCommand& cmd) {
+    // rm [options] object
+
+    /*
+        -f	Force: ignore nonexistent files, never prompt.
+        -i	Interactive: ask before deleting each file.
+        -I	Prompt once before removing more than three files or
+       recursively.
+
+        -r or -R	Recursive: remove directories and their
+       contents. -v	Verbose: show what is being deleted.
+    */
+
+    bool is_interactive = false;
+    bool is_verbose = false;
+    bool is_recursive = false;
+    bool is_forced = false;
+
+    for (const auto& flag : cmd.flags) {
+        if (flag == "i") {
+            is_interactive = true;
+        } else if (flag == "v") {
+            is_verbose = true;
+        } else if (flag == "r") {
+            is_recursive = true;
+        } else if (flag == "f") {
+            is_forced = true;
+        }
+    }
+}
+
+void TFMCommandExecutor::rm_func(const TFMCommand& cmd) { (void)cmd; }
 
 void TFMCommandExecutor::mkdir_func(const TFMCommand& cmd) {
     if (cmd.positional.empty()) {
