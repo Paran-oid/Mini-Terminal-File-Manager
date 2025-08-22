@@ -66,13 +66,14 @@ void TFMCommandExecutor::ls_func(const TFMCommand& cmd) {
 
     // initialize the map
     bool single_path = false;
-    std::unordered_map<std::string, std::vector<std::string>> path_file_map;
+    std::unordered_map<fs::path, std::vector<fs::path>> path_file_map;
+
     if (cmd.positional.empty()) {
         path_file_map[m_path.get_path()];
         single_path = true;
     } else {
         if (cmd.positional.size() == 1) {
-            const std::string main_path = cmd.positional[0];
+            const fs::path main_path = cmd.positional[0];
             if (!fs::exists(main_path)) {
                 manage_error(cmd, UNAVAILABLE_DIRECTORY, {main_path});
                 return;
@@ -81,10 +82,10 @@ void TFMCommandExecutor::ls_func(const TFMCommand& cmd) {
             single_path = true;
         } else {
             for (const std::string& arg : cmd.positional) {
-                if (!fs::exists(arg)) {
-                    manage_error(cmd, UNAVAILABLE_DIRECTORY, {arg});
+                if (!fs::exists(fs::path(arg))) {
+                    manage_error(cmd, UNAVAILABLE_DIRECTORY, {fs::path(arg)});
                 } else {
-                    path_file_map[arg] = {};
+                    path_file_map[fs::path(arg)] = {};
                 }
             }
         }
@@ -92,7 +93,7 @@ void TFMCommandExecutor::ls_func(const TFMCommand& cmd) {
 
     // get all current files/folders
     for (auto& path_file : path_file_map) {
-        const std::string& path = path_file.first;
+        const fs::path& path = path_file.first;
         if (fs::is_regular_file(path)) {
             path_file.second.push_back(path_file.first);
             continue;
@@ -121,17 +122,17 @@ void TFMCommandExecutor::ls_func(const TFMCommand& cmd) {
         auto& filenames = it->second;
         bool is_last_iterator = (std::next(it) == path_file_map.end());
 
-        auto it_max_length =
-            std::max_element(filenames.begin(), filenames.end(),
-                             [](const auto& a, const auto& b) {
-                                 return a.length() < b.length();
-                             });
+        auto it_max_length = std::max_element(
+            filenames.begin(), filenames.end(),
+            [](const auto& a, const auto& b) {
+                return a.string().length() < b.string().length();
+            });
 
         if (it_max_length == filenames.end()) {
             return;
         }
 
-        size_t max_length = it_max_length->length() + LS_PADDING;
+        size_t max_length = it_max_length->string().length() + LS_PADDING;
         size_t cols = static_cast<size_t>(m_screen.get_cols() / max_length);
         size_t rows = static_cast<size_t>(std::ceil(
             static_cast<float>(filenames.size()) / static_cast<float>(cols)));
@@ -139,10 +140,10 @@ void TFMCommandExecutor::ls_func(const TFMCommand& cmd) {
         std::ostringstream row_builder;
 
         if (!single_path && !is_file) {
-            m_rows.append(path + ":");
+            m_rows.append(path.string() + ":");
         } else {
             if (!single_path) {
-                m_rows.append(path);
+                m_rows.append(path.string());
             }
             if (is_file) {
                 continue;
@@ -196,10 +197,6 @@ void TFMCommandExecutor::cp_func(const TFMCommand& cmd) {
     bool is_recursive = false;
 
     for (const std::string& flag : cmd.flags) {
-        /*
-        if there is a file that will be over-written and this flag exists
-        show the dialog first
-        */
         if (flag == "i") {
             is_interactive = true;
         } else if (flag == "f") {
@@ -210,10 +207,6 @@ void TFMCommandExecutor::cp_func(const TFMCommand& cmd) {
             is_recursive = true;
         }
     }
-
-    (void)is_interactive;
-    (void)is_forced;
-    (void)is_src_newer_than_dest;
 
     std::vector<std::string> src_paths;
 
@@ -295,8 +288,6 @@ void TFMCommandExecutor::cp_func(const TFMCommand& cmd) {
         }
     }
 }
-
-// TODO: use fs::path whenever we are talking about a path
 
 void TFMCommandExecutor::mv_func(const TFMCommand& cmd) {
     // syntax

@@ -26,9 +26,9 @@
 
 ~~Copy files and directories (with overwrite prompt)~~
 
-Move/rename files and directories
+~~Move/rename files and directories~~
 
-Delete files
+~~Delete files~~
 
 Delete directories recursively
 
