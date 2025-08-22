@@ -39,3 +39,10 @@ bool is_seperator(char c) {
     std::string separators = "!\"#$%&\'()*+,-./:;<=>?@[\\]^`{|}~";
     return separators.find(c) != std::string::npos || c == ' ';
 }
+
+std::string str_to_upper(const std::string str) {
+    std::string res = str;
+    std::transform(res.begin(), res.end(), res.begin(),
+                   [](unsigned char c) { return std::toupper(c); });
+    return res;
+}

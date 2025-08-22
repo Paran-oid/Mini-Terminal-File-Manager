@@ -42,8 +42,6 @@ void TFMScreen::update_dimensions(int32_t sig) {
 
     wresize(stdscr, rows, cols);
     wrefresh(stdscr);
-
-    this->change_occured = true;
 }
 
 void TFMScreen::terminal_init() {

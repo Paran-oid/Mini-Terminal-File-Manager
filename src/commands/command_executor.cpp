@@ -296,26 +296,118 @@ void TFMCommandExecutor::cp_func(const TFMCommand& cmd) {
     }
 }
 
-void mv_func(const TFMCommand& cmd) {
+// TODO: use fs::path whenever we are talking about a path
+
+void TFMCommandExecutor::mv_func(const TFMCommand& cmd) {
     // syntax
     // mv [options] src dst
-
     // rename file: mv file1.txt file2.txt
     // move file: file.txt path/to/dst/
+    // mv file1.txt file2.txt file3.txt /backup/
     // rename and move: mv file.txt /path/to/destination/newname.txt
     // mv myfolder/ /new/location/
     // mv oldfolder newfolder
-    // mv file1.txt file2.txt file3.txt /backup/
 
     /*
     Info about flags:
     Useful Options
         Option	Meaning
         -i	Interactive: asks before overwriting existing files
-        -f	Force: overwrite without asking (default)
         -n	No-clobber: don’t overwrite existing files
         -v	Verbose: shows what is happening
     */
+
+    if (cmd.positional.size() < 2) {
+        manage_error(cmd, MISSING_FILE_OPERAND);
+        return;
+    }
+
+    bool is_interactive = false;
+    bool is_verbose = false;
+    bool is_no_clobber = false;
+
+    for (const auto& flag : cmd.flags) {
+        if (flag == "i") {
+            is_interactive = true;
+        } else if (flag == "v") {
+            is_verbose = true;
+        } else if (flag == "n") {
+            is_no_clobber = true;
+        }
+    }
+
+    fs::path dst_path = cmd.positional.back();
+    std::vector<fs::path> src_paths;
+
+    bool dst_is_directory = fs::exists(dst_path) && fs::is_directory(dst_path);
+
+    for (uint32_t i = 0; i < cmd.positional.size() - 1; i++) {
+        const fs::path arg = cmd.positional[i];
+        if (!fs::exists(arg)) {
+            manage_error(cmd, MISSING_FILE_DESTINATION, {arg.filename()});
+            return;
+        }
+        src_paths.push_back(arg);
+    }
+
+    std::ostringstream os;
+    if (dst_is_directory) {
+        for (const auto& src_path : src_paths) {
+            const fs::path new_path = dst_path / src_path.filename();
+
+            if (fs::exists(new_path) && is_no_clobber) {
+                continue;
+            }
+
+            if (fs::exists(dst_path) && is_interactive) {
+                std::string resp = m_dialog.receive(
+                    "mv: overwrite '" + new_path.filename().string() + "'? ");
+
+                if (str_to_upper(resp) != "Y") {
+                    continue;
+                }
+            }
+
+            fs::rename(src_path, new_path);
+            if (is_verbose) {
+                os << "renamed " << src_path.filename().string() << " -> "
+                   << new_path.string();
+                m_rows.append(os.str());
+                os.str("");
+            }
+        }
+    } else {
+        if (src_paths.size() > 1) {
+            manage_error(cmd, DESTINATION_NOT_A_DIRECTORY,
+                         {dst_path.filename()});
+            return;
+        }
+
+        if (fs::is_directory(src_paths[0]) &&
+            fs::is_regular_file(dst_path.filename())) {
+            manage_error(cmd, OVERWRITE_NON_DIR_WITH_DIR,
+                         {src_paths[0], dst_path});
+            return;
+        }
+
+        if (fs::exists(dst_path) && is_no_clobber) {
+            return;
+        }
+
+        if (fs::exists(dst_path) && is_interactive) {
+            std::string resp = m_dialog.receive(
+                "mv: overwrite '" + dst_path.filename().string() + "'? ");
+
+            if (str_to_upper(resp) != "Y") {
+                return;
+            }
+        }
+
+        fs::rename(src_paths[0], dst_path);
+        os << "renamed " << src_paths[0].filename() << " -> "
+           << dst_path.filename();
+        m_rows.append(os.str());
+    }
 }
 
 void TFMCommandExecutor::mkdir_func(const TFMCommand& cmd) {
@@ -447,6 +539,24 @@ void TFMCommandExecutor::manage_error(const TFMCommand& cmd,
             message_buf << cmd.name << ": " << "missing directory: '"
                         << data[0];
             break;
+        case DESTINATION_NOT_A_DIRECTORY:
+            if (data.empty()) {
+                throw std::runtime_error(
+                    "TFMCommandExecutor::manage_error: expected data to be "
+                    "passed");
+            }
+            message_buf << cmd.name << ": target: '" << data[0]
+                        << ": Not a directory";
+            break;
+        case OVERWRITE_NON_DIR_WITH_DIR:
+            if (data.size() < 2) {
+                throw std::runtime_error(
+                    "TFMCommandExecutor::manage_error: expected 2 parameters "
+                    "to be "
+                    "passed");
+            }
+            message_buf << cmd.name << ": cannot overwrite non-directory '"
+                        << data[0] << "' with directory '" << data[1] << "'";
         default:
             break;
     }

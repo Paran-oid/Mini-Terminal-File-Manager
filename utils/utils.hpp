@@ -13,3 +13,5 @@ void str_replace_str_to_str(std::string& dst, const std::string& to_replace,
                             const std::string& replacement);
 uint32_t str_num_common_chars(const std::string& str1, const std::string& str2);
 bool is_seperator(char c);
+
+std::string str_to_upper(const std::string str);

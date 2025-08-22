@@ -63,8 +63,7 @@ void TFMInput::append_char(char c) {
     current_rows = extract_current_rows();
     m_command_history.set_last_entry(current_rows);
 
-    // m_rows.refresh(m_command_line.get_last_row_index());
-    m_rows.refresh(0);
+    m_rows.refresh(m_command_line.get_last_row_index());
 }
 
 void TFMInput::remove_char() {
@@ -107,8 +106,7 @@ void TFMInput::remove_char() {
         m_cursor.move(KEY_RIGHT);
     }
 
-    // m_rows.refresh(m_command_line.get_last_row_index());
-    m_rows.refresh(0);
+    m_rows.refresh(m_command_line.get_last_row_index());
 }
 
 void TFMInput::commandline_insert(const std::string& content,
