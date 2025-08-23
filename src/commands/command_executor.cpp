@@ -194,6 +194,7 @@ void TFMCommandExecutor::cp_func(const TFMCommand& cmd) {
     bool is_interactive = false;
     __attribute__((unused)) bool is_forced = false;
     __attribute__((unused)) bool is_src_newer_than_dest = false;
+    bool is_verbose = false;
     bool is_recursive = false;
 
     for (const std::string& flag : cmd.flags) {
@@ -205,6 +206,8 @@ void TFMCommandExecutor::cp_func(const TFMCommand& cmd) {
             is_src_newer_than_dest = true;
         } else if (flag == "r") {
             is_recursive = true;
+        } else if (flag == "v") {
+            is_verbose = true;
         }
     }
 
@@ -220,9 +223,7 @@ void TFMCommandExecutor::cp_func(const TFMCommand& cmd) {
     }
 
     std::string dst = fs::absolute(cmd.positional.back()).string();
-
-    // fs::path allows the operator "/"" to just add "/" to a path
-
+    std::ostringstream os;
     for (const auto& src_path : src_paths) {
         fs::path src(src_path);
         fs::path target(dst);
@@ -242,49 +243,80 @@ void TFMCommandExecutor::cp_func(const TFMCommand& cmd) {
             target /= src.filename();
 
             if (fs::exists(target) && is_interactive) {
-                std::string resp = m_dialog.receive(
+                std::string prompt = m_dialog.receive(
                     "cp: overwrite " + target.filename().string() + "?");
-                std::transform(resp.begin(), resp.end(), resp.begin(),
-                               [](unsigned char c) { return std::toupper(c); });
-                if (resp != "Y") {
+
+                if (std::toupper(prompt[0]) != 'Y') {
                     continue;
                 }
             }
-            fs::create_directories(target);
+
+            try {
+                fs::create_directories(target);
+            } catch (fs::filesystem_error& e) {
+                manage_error(cmd, FAILED_DIRECTORY_CREATION, {target});
+                continue;
+            }
 
             for (const auto& entry : fs::recursive_directory_iterator(src)) {
                 const auto& path = entry.path();
                 fs::path relative = fs::relative(path, src);
-                fs::copy(path, target / relative,
-                         fs::copy_options::overwrite_existing |
-                             (is_recursive ? fs::copy_options::recursive
-                                           : fs::copy_options::none));
+                const auto& new_path = target / relative;
+
+                try {
+                    fs::copy(path, new_path,
+                             fs::copy_options::overwrite_existing |
+                                 (is_recursive ? fs::copy_options::recursive
+                                               : fs::copy_options::none));
+                } catch (fs::filesystem_error& e) {
+                    manage_error(cmd, FILESYSTEM_ERROR, {e.what()});
+                    continue;
+                }
+
+                if (is_verbose) {
+                    os << "copied: " << path.filename() << " -> "
+                       << new_path.filename();
+                    m_rows.append(os.str());
+                    os.str("");
+                }
             }
         } else {
-            fs::path result;
+            fs::path resulting_dst;
             if (fs::is_directory(target)) {
-                result = target / src.filename();
+                resulting_dst = target / src.filename();
             } else {
-                result = target;
-                if (!fs::exists(result) && result.extension().empty()) {
-                    manage_error(
-                        cmd, TFMCommandErrorCode::TARGET_DIRECTORY_NON_EXISTANT,
-                        {result.filename()});
+                resulting_dst = target;
+                if (!fs::exists(resulting_dst) &&
+                    resulting_dst.extension().empty()) {
+                    manage_error(cmd, TARGET_DIRECTORY_NON_EXISTANT,
+                                 {resulting_dst.filename()});
                     break;
                 }
             }
 
-            if (fs::exists(result) && is_interactive) {
-                std::string resp = m_dialog.receive(
-                    "cp: overwrite " + result.filename().string() + "? ");
-                std::transform(resp.begin(), resp.end(), resp.begin(),
-                               [](unsigned char c) { return std::toupper(c); });
-                if (resp != "Y") {
+            if (fs::exists(resulting_dst) && is_interactive) {
+                std::string prompt =
+                    m_dialog.receive("cp: overwrite " +
+                                     resulting_dst.filename().string() + "? ");
+                if (std::toupper(prompt[0]) != 'Y') {
                     continue;
                 }
             }
 
-            fs::copy_file(src, result, fs::copy_options::overwrite_existing);
+            try {
+                fs::copy_file(src, resulting_dst,
+                              fs::copy_options::overwrite_existing);
+            } catch (fs::filesystem_error& e) {
+                manage_error(cmd, FILESYSTEM_ERROR, {e.what()});
+                continue;
+            }
+
+            if (is_verbose) {
+                os << "copied " << src.filename() << " -> "
+                   << resulting_dst.filename();
+                m_rows.append(os.str());
+                os.str("");
+            }
         }
     }
 }
@@ -359,7 +391,13 @@ void TFMCommandExecutor::mv_func(const TFMCommand& cmd) {
                 }
             }
 
-            fs::rename(src_path, new_path);
+            try {
+                fs::rename(src_path, new_path);
+            } catch (fs::filesystem_error& e) {
+                manage_error(cmd, FILESYSTEM_ERROR, {e.what()});
+                continue;
+            }
+
             if (is_verbose) {
                 os << "renamed " << src_path.filename().string() << " -> "
                    << new_path.string();
@@ -394,7 +432,12 @@ void TFMCommandExecutor::mv_func(const TFMCommand& cmd) {
             }
         }
 
-        fs::rename(src_paths[0], dst_path);
+        try {
+            fs::rename(src_paths[0], dst_path);
+        } catch (fs::filesystem_error& e) {
+            manage_error(cmd, FILESYSTEM_ERROR, {e.what()});
+            return;
+        }
 
         if (is_verbose) {
             os << "renamed " << src_paths[0].filename() << " -> "
@@ -403,9 +446,6 @@ void TFMCommandExecutor::mv_func(const TFMCommand& cmd) {
         }
     }
 }
-
-// TODO: check returned result by each filesystem function
-// TODO: to make sure each instruction was successful
 
 void TFMCommandExecutor::rm_func(const TFMCommand& cmd) {
     // rm [options] object
@@ -459,32 +499,43 @@ void TFMCommandExecutor::rm_func(const TFMCommand& cmd) {
             continue;
         }
 
-        // TODO: make sure all inputs are correctly formatted for dialog prompts
         if (fs::is_regular_file(path)) {
             if (is_interactive) {
                 std::string prompt = m_dialog.receive(
                     "are you sure you want to delete the file: " +
                     path.filename().string() + "? ");
-                if (str_to_upper(prompt) != "Y") {
+                if (std::toupper(prompt[0]) != 'Y') {
                     continue;
                 }
             }
-            fs::remove(path);
+
+            try {
+                fs::remove(path);
+
+            } catch (fs::filesystem_error& e) {
+                manage_error(cmd, FILESYSTEM_ERROR, {e.what()});
+                continue;
+            }
+
         } else {
             if (is_interactive) {
                 std::string prompt = m_dialog.receive(
                     "are you sure you want to delete the directory: " +
                     path.filename().string() + "? ");
 
-                if (str_to_upper(prompt) != "Y") {
+                if (std::toupper(prompt[0]) != 'Y') {
                     continue;
                 }
             }
-            fs::remove_all(path);
+            try {
+                fs::remove_all(path);
+
+            } catch (fs::filesystem_error& e) {
+                manage_error(cmd, FILESYSTEM_ERROR, {e.what()});
+                continue;
+            }
         }
 
-        // TODO: instead of uppercasing the whole strings instead I have to
-        // TODO: check just first char of string for each command
         if (is_verbose) {
             os << "removed " << path;
             m_rows.append(os.str());
@@ -525,10 +576,19 @@ void TFMCommandExecutor::touch_func(const TFMCommand& cmd) {
 
         if (fs::exists(path)) {
             auto now = std::chrono::file_clock::now();
-            fs::last_write_time(path, now);
+            try {
+                fs::last_write_time(path, now);
+
+            } catch (fs::filesystem_error& e) {
+                manage_error(cmd, FILESYSTEM_ERROR, {e.what()});
+            }
         } else {
-            std::ofstream ofs(path);
-            ofs.close();
+            try {
+                std::ofstream ofs(path);
+                ofs.close();
+            } catch (const std::ios_base::failure& e) {
+                manage_error(cmd, FILESYSTEM_ERROR, {e.what()});
+            }
         }
     }
 }
@@ -536,6 +596,7 @@ void TFMCommandExecutor::touch_func(const TFMCommand& cmd) {
 void TFMCommandExecutor::manage_error(const TFMCommand& cmd,
                                       TFMCommandErrorCode code,
                                       const std::vector<std::string> data) {
+    // TODO: maybe get rid of repetition
     std::ostringstream message_buf;
     switch (code) {
         case INVALID_COMMAND:
@@ -658,6 +719,15 @@ void TFMCommandExecutor::manage_error(const TFMCommand& cmd,
             }
             message_buf << cmd.name << ": cannot remove '" << data[0]
                         << "/': is a directory";
+            break;
+
+        case FILESYSTEM_ERROR:
+            if (data.empty()) {
+                throw std::runtime_error(
+                    "TFMCommandExecutor::manage_error: expected data to be "
+                    "passed");
+            }
+            message_buf << cmd.name << ": " << data[0];
             break;
         default:
             break;
