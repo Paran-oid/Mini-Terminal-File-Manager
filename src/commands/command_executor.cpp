@@ -561,6 +561,8 @@ void TFMCommandExecutor::mkdir_func(const TFMCommand& cmd) {
 }
 
 void TFMCommandExecutor::touch_func(const TFMCommand& cmd) {
+    // TODO: implement most important flags
+
     if (cmd.positional.empty()) {
         manage_error(cmd, MISSING_FILE_OPERAND);
         return;
