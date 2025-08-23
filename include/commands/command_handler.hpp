@@ -40,7 +40,8 @@ class TFMCommandHandler {
             {"mkdir", &TFMCommandExecutor::mkdir_func},
             {"touch", &TFMCommandExecutor::touch_func},
             {"cat", &TFMCommandExecutor::cat_func},
-            {"mv", &TFMCommandExecutor::mv_func}};
+            {"mv", &TFMCommandExecutor::mv_func},
+            {"rm", &TFMCommandExecutor::rm_func}};
 
         for (auto& [name, func_ptr] : commands_map) {
             m_mapper.register_command(name,

@@ -395,11 +395,17 @@ void TFMCommandExecutor::mv_func(const TFMCommand& cmd) {
         }
 
         fs::rename(src_paths[0], dst_path);
-        os << "renamed " << src_paths[0].filename() << " -> "
-           << dst_path.filename();
-        m_rows.append(os.str());
+
+        if (is_verbose) {
+            os << "renamed " << src_paths[0].filename() << " -> "
+               << dst_path.filename();
+            m_rows.append(os.str());
+        }
     }
 }
+
+// TODO: check returned result by each filesystem function
+// TODO: to make sure each instruction was successful
 
 void TFMCommandExecutor::rm_func(const TFMCommand& cmd) {
     // rm [options] object
@@ -431,20 +437,58 @@ void TFMCommandExecutor::rm_func(const TFMCommand& cmd) {
         }
     }
 
+    if (is_forced) {
+        is_interactive = false;
+    }
+
     if (cmd.positional.empty()) {
         manage_error(cmd, MISSING_FILE_OPERAND);
         return;
     }
 
-    for (const auto& path : cmd.positional) {
-        if (!fs::exists(path)) {
-            manage_error(cmd, UNAVAILABLE_DIRECTORY);
+    std::ostringstream os;
+    for (const auto& path_str : cmd.positional) {
+        fs::path path(path_str);
+        if (!fs::exists(path) && !is_forced) {
+            manage_error(cmd, UNAVAILABLE_DIRECTORY, {path.filename()});
             continue;
         }
 
         if (fs::is_directory(path) && !is_recursive) {
-            manage_error(cmd, EXPECTED_RECURSIVE_FLAG);
+            manage_error(cmd, EXPECTED_RECURSIVE_FLAG, {path.filename()});
             continue;
+        }
+
+        // TODO: make sure all inputs are correctly formatted for dialog prompts
+        if (fs::is_regular_file(path)) {
+            if (is_interactive) {
+                std::string prompt = m_dialog.receive(
+                    "are you sure you want to delete the file: " +
+                    path.filename().string() + "? ");
+                if (str_to_upper(prompt) != "Y") {
+                    continue;
+                }
+            }
+            fs::remove(path);
+        } else {
+            if (is_interactive) {
+                std::string prompt = m_dialog.receive(
+                    "are you sure you want to delete the directory: " +
+                    path.filename().string() + "? ");
+
+                if (str_to_upper(prompt) != "Y") {
+                    continue;
+                }
+            }
+            fs::remove_all(path);
+        }
+
+        // TODO: instead of uppercasing the whole strings instead I have to
+        // TODO: check just first char of string for each command
+        if (is_verbose) {
+            os << "removed " << path;
+            m_rows.append(os.str());
+            os.str("");
         }
     }
 }
@@ -604,7 +648,8 @@ void TFMCommandExecutor::manage_error(const TFMCommand& cmd,
                     "passed");
             }
             message_buf << cmd.name << ": cannot overwrite non-directory '"
-                        << data[0] << "' with directory '" << data[1] << "'";
+                        << data[0] << "' with directory '" << data[1] << "\'";
+            break;
         case EXPECTED_RECURSIVE_FLAG:
             if (data.empty()) {
                 throw std::runtime_error(

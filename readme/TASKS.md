@@ -30,15 +30,15 @@
 
 ~~Delete files~~
 
-Delete directories recursively
+~~Delete directories recursively~~
 
-Create new files
+~~Create new files~~
 
-Create new directories
+~~Create new directories~~
 
-Duplicate file
+~~Duplicate file~~
 
-    File touch (update modification timestamp along with all it's flags)
+File touch (update modification timestamp along with all it's flags)
 
 📦 3. File Metadata and Info
 
