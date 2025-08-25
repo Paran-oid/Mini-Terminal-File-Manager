@@ -10,7 +10,7 @@
 #include "renderer.hpp"
 #include "rows.hpp"
 
-std::string TFMDialog::receive(const std::string& message) {
+std::string TFMDialog::prompt(const std::string& message) {
     m_input.commandline_insert(message, TFMMessageType::M_OTHER);
     m_renderer.display();
     std::ostringstream out;
@@ -28,7 +28,7 @@ std::string TFMDialog::receive(const std::string& message) {
 
         m_renderer.display();
     }
-	
+
     m_config.enable_command();
     return out.str();
 }

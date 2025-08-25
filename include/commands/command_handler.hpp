@@ -16,8 +16,13 @@ class TFMScreen;
 class TFMConfig;
 class TFMDialog;
 
+/// @brief fn defined to be able to map each command (string) to function (fn)
 using fn = void (TFMCommandExecutor::*)(const TFMCommand&);
 
+/**
+ * @brief Orchestrates command componments (parser, mapper, executor)
+ *
+ */
 class TFMCommandHandler {
    private:
     TFMCommandParser m_parser;
@@ -25,6 +30,17 @@ class TFMCommandHandler {
     TFMCommandExecutor m_executor;
 
    public:
+    /**
+     * @brief Construct a new TFMCommandHandler object and maps each command
+     * with it's function
+     *
+     * @param path
+     * @param rows
+     * @param screen
+     * @param config
+     * @param cursor
+     * @param dialog
+     */
     TFMCommandHandler(TFMPathHandler& path, TFMRows& rows, TFMScreen& screen,
                       TFMConfig& config, TFMCursor& cursor, TFMDialog& dialog)
         : m_parser(),
@@ -53,5 +69,10 @@ class TFMCommandHandler {
 
     ~TFMCommandHandler() = default;
 
+    /**
+     * @brief Processes entered command by user
+     *
+     * @param input
+     */
     void process(const std::string& input);
 };

@@ -12,6 +12,10 @@
 #include "rows.hpp"
 #include "screen.hpp"
 
+/**
+ * @brief Central class that orchestrate all modules together
+ *
+ */
 class TFMApp {
    private:
     TFMConfig m_config;
@@ -27,6 +31,10 @@ class TFMApp {
     TFMDialog m_dialog;
 
    public:
+    /**
+     * @brief Construct a new TFMApp object
+     *
+     */
     TFMApp()
         : m_config{},
           m_command_line{},
@@ -53,11 +61,19 @@ class TFMApp {
         m_config.disable_command();
     }
 
+    /**
+     * @brief Destroy the TFMApp object
+     *
+     */
     ~TFMApp() {
         m_config.disable_command();
         m_config.end_program();
     }
 
+    /**
+     * @brief Executes the program
+     *
+     */
     void run() {
         m_screen.terminal_init();
 

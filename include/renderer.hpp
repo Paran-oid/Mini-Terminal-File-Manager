@@ -1,8 +1,5 @@
 #pragma once
 
-
-
-
 #include <cstdint>
 #include <sstream>
 
@@ -14,6 +11,10 @@ class TFMScreen;
 class TFMPathHandler;
 class TFMCommandLine;
 
+/**
+ * @brief Provides rendering for all the app's features
+ *
+ */
 class TFMRenderer {
    private:
     TFMConfig& m_config;
@@ -26,6 +27,16 @@ class TFMRenderer {
     std::ostringstream m_abuf;
 
    public:
+    /**
+     * @brief Construct a new TFMRenderer object
+     *
+     * @param config
+     * @param rows
+     * @param screen
+     * @param path
+     * @param cursor
+     * @param command_line
+     */
     TFMRenderer(TFMConfig& config, TFMRows& rows, TFMScreen& screen,
                 TFMPathHandler& path, TFMCursor& cursor,
                 TFMCommandLine& command_line)
@@ -37,7 +48,21 @@ class TFMRenderer {
           m_command_line{command_line} {}
     ~TFMRenderer() = default;
 
+    /**
+     * @brief Scroll gets updated accordingly with the row offset
+     *
+     */
     void adjust_scroll();
+
+    /**
+     * @brief Displays the rows within current row interval (screen rows)
+     *
+     */
     void display();
+
+    /**
+     * @brief Draws each row accordinlgy
+     *
+     */
     void draw();
 };

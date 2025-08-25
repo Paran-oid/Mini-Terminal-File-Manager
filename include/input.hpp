@@ -18,6 +18,10 @@ class TFMRenderer;
 
 enum TFMMessageType { M_COMMAND_LINE_TYPE, M_OTHER, M_NONE };
 
+/**
+ * @brief Handles everything related to input (beside prompting)
+ *
+ */
 class TFMInput {
    private:
     TFMConfig& m_config;
@@ -29,7 +33,57 @@ class TFMInput {
     TFMCommandHandler& m_command_handler;
     TFMPathHandler& m_path;
 
+    /**
+     * @brief extracts current rows (command line content inclusive)
+     *
+     * @return std::vector<std::string>
+     */
+    std::vector<std::string> extract_current_rows();
+
+    /**
+     * @brief extracts input buff (command line content not inclusive)
+     *
+     * @return std::string
+     */
+    std::string extract_input_buf();
+
+    /**
+     * @brief Appends char to input buf at cursor position
+     *
+     * @param c
+     */
+    void append_char(char c);
+
+    /**
+     * @brief Removes char to input buf at cursor position
+     *
+     */
+    void remove_char();
+
+    /**
+     * @brief Handles enter operation
+     *
+     */
+    void enter();
+
+    void commandline_insert(const std::string& content, TFMMessageType type);
+
+    friend class TFMDialog;
+    friend class TFMApp;
+
    public:
+    /**
+     * @brief Construct a new TFMInput object
+     *
+     * @param config
+     * @param cursor
+     * @param rows
+     * @param command_line
+     * @param command_history
+     * @param screen
+     * @param command_handler
+     * @param path
+     */
     TFMInput(TFMConfig& config, TFMCursor& cursor, TFMRows& rows,
              TFMCommandLine& command_line, TFMCommandHistory& command_history,
              TFMScreen& screen, TFMCommandHandler& command_handler,
@@ -42,14 +96,23 @@ class TFMInput {
           m_screen{screen},
           m_command_handler{command_handler},
           m_path{path} {}
+
+    /**
+     * @brief Destroy the TFMInput object
+     *
+     */
     ~TFMInput() = default;
 
-    std::vector<std::string> extract_current_rows();
-    std::string extract_input_buf();
-
-    void append_char(char c);
-    void remove_char();
-    void commandline_insert(const std::string& content, TFMMessageType type);
+    /**
+     * @brief Processes user input
+     *
+     */
     void process();
-    void enter();
+
+    /**
+     * @brief Inserts a new command
+     *
+     * @param content
+     * @param type
+     */
 };

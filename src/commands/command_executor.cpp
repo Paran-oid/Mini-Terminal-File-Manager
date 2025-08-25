@@ -243,7 +243,7 @@ void TFMCommandExecutor::cp_func(const TFMCommand& cmd) {
             target /= src.filename();
 
             if (fs::exists(target) && is_interactive) {
-                std::string prompt = m_dialog.receive(
+                std::string prompt = m_dialog.prompt(
                     "cp: overwrite " + target.filename().string() + "?");
 
                 if (std::toupper(prompt[0]) != 'Y') {
@@ -296,8 +296,8 @@ void TFMCommandExecutor::cp_func(const TFMCommand& cmd) {
 
             if (fs::exists(resulting_dst) && is_interactive) {
                 std::string prompt =
-                    m_dialog.receive("cp: overwrite " +
-                                     resulting_dst.filename().string() + "? ");
+                    m_dialog.prompt("cp: overwrite " +
+                                    resulting_dst.filename().string() + "? ");
                 if (std::toupper(prompt[0]) != 'Y') {
                     continue;
                 }
@@ -383,7 +383,7 @@ void TFMCommandExecutor::mv_func(const TFMCommand& cmd) {
             }
 
             if (fs::exists(dst_path) && is_interactive) {
-                std::string resp = m_dialog.receive(
+                std::string resp = m_dialog.prompt(
                     "mv: overwrite '" + new_path.filename().string() + "'? ");
 
                 if (str_to_upper(resp) != "Y") {
@@ -424,7 +424,7 @@ void TFMCommandExecutor::mv_func(const TFMCommand& cmd) {
         }
 
         if (fs::exists(dst_path) && is_interactive) {
-            std::string resp = m_dialog.receive(
+            std::string resp = m_dialog.prompt(
                 "mv: overwrite '" + dst_path.filename().string() + "'? ");
 
             if (str_to_upper(resp) != "Y") {
@@ -501,7 +501,7 @@ void TFMCommandExecutor::rm_func(const TFMCommand& cmd) {
 
         if (fs::is_regular_file(path)) {
             if (is_interactive) {
-                std::string prompt = m_dialog.receive(
+                std::string prompt = m_dialog.prompt(
                     "are you sure you want to delete the file: " +
                     path.filename().string() + "? ");
                 if (std::toupper(prompt[0]) != 'Y') {
@@ -519,7 +519,7 @@ void TFMCommandExecutor::rm_func(const TFMCommand& cmd) {
 
         } else {
             if (is_interactive) {
-                std::string prompt = m_dialog.receive(
+                std::string prompt = m_dialog.prompt(
                     "are you sure you want to delete the directory: " +
                     path.filename().string() + "? ");
 

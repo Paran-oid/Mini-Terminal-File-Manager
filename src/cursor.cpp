@@ -131,8 +131,3 @@ void TFMCursor::move_to_end() {
         this->move(KEY_RIGHT);
     }
 }
-
-void TFMCursor::update() {
-    m_app_cursor.cx = m_rows.back().size();
-    m_app_cursor.cy = m_rows.size() - 1;
-}
