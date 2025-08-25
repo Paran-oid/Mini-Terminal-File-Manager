@@ -25,6 +25,11 @@ class TFMRows {
      * @param screen
      */
     TFMRows(TFMScreen& screen) : m_screen{screen} {};
+
+    /**
+     * @brief Destroy the TFMRows object
+     *
+     */
     ~TFMRows() = default;
 
     /**

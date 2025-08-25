@@ -25,6 +25,11 @@ class TFMDialog {
      */
     TFMDialog(TFMRenderer& renderer, TFMConfig& config, TFMInput& input)
         : m_renderer{renderer}, m_config{config}, m_input{input} {}
+
+    /**
+     * @brief Destroy the TFMDialog object
+     *
+     */
     ~TFMDialog() = default;
 
     /**

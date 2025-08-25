@@ -50,6 +50,10 @@ class TFMCursor {
           m_command_history{command_history} {
         m_app_cursor = {0, 0};
     }
+    /**
+     * @brief Destroy the TFMCursor object
+     *
+     */
     ~TFMCursor() = default;
 
     /**

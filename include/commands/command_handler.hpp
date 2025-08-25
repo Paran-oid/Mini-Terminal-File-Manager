@@ -67,6 +67,10 @@ class TFMCommandHandler {
         }
     }
 
+    /**
+     * @brief Destroy the TFMCommandHandler object
+     *
+     */
     ~TFMCommandHandler() = default;
 
     /**

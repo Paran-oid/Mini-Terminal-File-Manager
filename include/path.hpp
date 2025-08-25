@@ -17,7 +17,16 @@ class TFMPathHandler {
     std::string m_home_dir;
 
    public:
+    /**
+     * @brief Construct a new TFMPathHandler object
+     *
+     */
     TFMPathHandler() : m_current_path{fs::current_path()} { update_home_dir(); }
+
+    /**
+     * @brief Destroy the TFMPathHandler object
+     *
+     */
     ~TFMPathHandler() = default;
 
     /**

@@ -46,6 +46,11 @@ class TFMRenderer {
           m_path{path},
           m_cursor{cursor},
           m_command_line{command_line} {}
+
+    /**
+     * @brief Destroy the TFMRenderer object
+     *
+     */
     ~TFMRenderer() = default;
 
     /**
