@@ -31,6 +31,8 @@ void TFMRenderer::display() {
 
     printw("%s", m_abuf.str().c_str());
 
+    /// @brief this is a const reference to current cursor that will be moved
+    /// using move() func
     const TFMCursorCords& cursor_current = m_cursor.get();
     int32_t calculated_cy =
         static_cast<int32_t>(cursor_current.cy - m_screen.get_row_off());

@@ -1,5 +1,4 @@
-#ifndef APP_HPP
-#define APP_HPP
+#pragma once
 
 #include "command_handler.hpp"
 #include "command_history.hpp"
@@ -72,5 +71,3 @@ class TFMApp {
         m_screen.terminal_destroy();
     }
 };
-
-#endif

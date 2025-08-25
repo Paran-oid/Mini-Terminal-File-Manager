@@ -22,6 +22,28 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Enable debugging symbols
 set(CMAKE_BUILD_TYPE Debug)
 
+# Doxygen-related
+
+# Find Doxygen
+find_package(Doxygen REQUIRED)
+
+# Set Doxygen config
+set(DOXYGEN_IN  ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
+set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+
+if (DOXYGEN_FOUND)
+    # Copy Doxyfile and substitute variables if needed
+    configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+
+    # Add a custom target
+	add_custom_target(docs ALL
+		COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+		COMMENT "Generating API documentation with Doxygen"
+		VERBATIM
+	)
+endif()
+
 
 # SRC and include directories
 
