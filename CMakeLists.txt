@@ -49,6 +49,7 @@ endif()
 
 set(SRC 
 	utils/utils.cpp
+	src/file.cpp
 	src/main.cpp
 	src/renderer.cpp
 	src/input.cpp
@@ -62,8 +63,8 @@ set(SRC
 	src/commands/command_executor.cpp
 	src/commands/command_mapper.cpp
 	src/commands/command_parser.cpp
-
 )
+
 set(include_dir
 	${CMAKE_SOURCE_DIR}/utils
 	${CMAKE_SOURCE_DIR}/include

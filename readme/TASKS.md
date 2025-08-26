@@ -38,7 +38,7 @@
 
 ~~Duplicate file~~
 
-File touch (update modification timestamp along with all it's flags)
+~~File touch (update modification timestamp along with all it's flags)~~
 
 📦 3. File Metadata and Info
 
@@ -52,7 +52,7 @@ Last modification time
 
 File type detection (regular, directory, symlink, device, pipe)
 
-    MIME type detection (optional via libmagic)
+MIME type detection (optional via libmagic)
 
 🔍 4. Search and Filtering
 
