@@ -1,5 +1,9 @@
 #include "command_executor.hpp"
 
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include <algorithm>
 #include <cctype>
 #include <chrono>
@@ -561,7 +565,22 @@ void TFMCommandExecutor::mkdir_func(const TFMCommand& cmd) {
 }
 
 void TFMCommandExecutor::touch_func(const TFMCommand& cmd) {
-    // TODO: implement most important flags
+    bool change_just_access_time = false;
+    bool change_just_modification_time = false;
+    bool no_file_to_be_created = false;
+
+    for (const std::string& flag : cmd.flags) {
+        if (flag == "a") {
+            change_just_access_time = true;
+        } else if (flag == "m") {
+            change_just_modification_time = true;
+        } else if (flag == "c") {
+            no_file_to_be_created = true;
+        }
+    }
+
+    (void)change_just_access_time;
+    (void)change_just_modification_time;
 
     if (cmd.positional.empty()) {
         manage_error(cmd, MISSING_FILE_OPERAND);
@@ -569,22 +588,45 @@ void TFMCommandExecutor::touch_func(const TFMCommand& cmd) {
     }
 
     for (const std::string& arg : cmd.positional) {
-        // ignore flags
-        if (arg[0] == '-') {
-            continue;
-        }
-
         fs::path path = fs::path(arg);
 
         if (fs::exists(path)) {
-            auto now = std::chrono::file_clock::now();
-            try {
-                fs::last_write_time(path, now);
+            if (change_just_modification_time) {
+                auto now = std::chrono::file_clock::now();
+                try {
+                    fs::last_write_time(path, now);
 
-            } catch (fs::filesystem_error& e) {
-                manage_error(cmd, FILESYSTEM_ERROR, {e.what()});
+                } catch (fs::filesystem_error& e) {
+                    manage_error(cmd, FILESYSTEM_ERROR, {e.what()});
+                }
+            } else {
+                const char* path_c_str = path.string().c_str();
+                struct timespec times[2];
+                clock_gettime(CLOCK_REALTIME, &times[0]);
+
+                // times[0] = atime
+                // times[1] = mtime
+
+                // UTIME_OMIT: don’t touch that field
+                // UTIME_NOW: "Set this timestamp to the current system time
+                // now".
+
+                if (change_just_access_time) {
+                    times[0].tv_nsec = UTIME_NOW;
+                }
+
+                if (change_just_modification_time) {
+                    times[1].tv_nsec = UTIME_NOW;
+                }
+
+                utimensat(AT_FDCWD, path_c_str, times, 0);
             }
-        } else {
+        }
+
+        else {
+            if (no_file_to_be_created) {
+                continue;
+            }
             try {
                 std::ofstream ofs(path);
                 ofs.close();
@@ -598,139 +640,91 @@ void TFMCommandExecutor::touch_func(const TFMCommand& cmd) {
 void TFMCommandExecutor::manage_error(const TFMCommand& cmd,
                                       TFMCommandErrorCode code,
                                       const std::vector<std::string> data) {
-    // TODO: maybe get rid of repetition
     std::ostringstream message_buf;
+    message_buf << cmd.name << ": ";  // common prefix
+
+    auto require = [&](size_t idx = 0) -> const std::string& {
+        if (data.size() <= idx) {
+            throw std::runtime_error(
+                "TFMCommandExecutor::manage_error: expected data to be passed");
+        }
+        return data[idx];
+    };
+
     switch (code) {
         case INVALID_COMMAND:
-            message_buf << cmd.name << ": command not found";
+            message_buf << "command not found";
             break;
+
         case UNAVAILABE_DIRECTORY_OR_FILE:
-            if (data.empty()) {
-                throw std::runtime_error(
-                    "TFMCommandExecutor::manage_error: expected data to be "
-                    "passed");
-            }
-            message_buf << cmd.name << ": " << data[0]
-                        << ": no such file or directory";
-            break;
         case UNAVAILABLE_DIRECTORY:
-            if (data.empty()) {
-                throw std::runtime_error(
-                    "TFMCommandExecutor::manage_error: expected data to be "
-                    "passed");
-            }
-            message_buf << cmd.name << ": " << data[0]
-                        << ": no such file or directory";
+            message_buf << require() << ": no such file or directory";
             break;
+
         case MISSING_OPERAND:
-            message_buf << cmd.name << ": " << "missing operand";
+            message_buf << "missing operand";
             break;
+
         case MISSING_FILE_OPERAND:
             if (cmd.positional.empty()) {
-                message_buf << cmd.name << ": " << "missing file operand";
+                message_buf << "missing file operand";
             } else {
-                if (data.empty()) {
-                    throw std::runtime_error(
-                        "TFMCommandExecutor::manage_error: expected data to be "
-                        "passed");
-                }
-                message_buf << cmd.name << ": "
-                            << "missing file operand after: '" << data[0]
+                message_buf << "missing file operand after: '" << require()
                             << "'";
             }
             break;
+
         case MISSING_FILE_DESTINATION:
-            if (data.empty()) {
-                throw std::runtime_error(
-                    "TFMCommandExecutor::manage_error: expected data to be "
-                    "passed");
-            }
-            message_buf << cmd.name << ": "
-                        << "missing destination file operand after '" << data[0]
-                        << "'";
+            message_buf << "missing destination file operand after '"
+                        << require() << "'";
             break;
+
         case MISSING_FILE_SOURCE:
-            if (data.empty()) {
-                throw std::runtime_error(
-                    "TFMCommandExecutor::manage_error: expected data to be "
-                    "passed");
-            }
-            message_buf << cmd.name << ": "
-                        << "missing source file operand after '" << data[0]
+            message_buf << "missing source file operand after '" << require()
                         << "'";
             break;
+
         case FAILED_DIRECTORY_CREATION:
             if (data.empty()) {
-                message_buf << cmd.name << ": " << "failed creating directory'";
+                message_buf << "failed creating directory";
             } else {
-                message_buf << cmd.name << ": " << "failed creating directory '"
-                            << data[0];
+                message_buf << "failed creating directory '" << require()
+                            << "'";
             }
             break;
+
         case FLAG_NOT_SPECIFIED:
-            if (data.empty() || data.size() < 2) {
-                throw std::runtime_error(
-                    "TFMCommandExecutor::manage_error: expected data to be "
-                    "passed");
-            }
-            message_buf << cmd.name << ": -" << data[0]
-                        << " not specified; omitting directory: " << data[1];
+            message_buf << "-" << require(0)
+                        << " not specified; omitting directory: " << require(1);
             break;
+
         case SAME_FILE_PASSED:
-            if (data.empty()) {
-                throw std::runtime_error(
-                    "TFMCommandExecutor::manage_error: expected data to be "
-                    "passed");
-            }
-            message_buf << cmd.name << ": '" << data[0] << "' and '" << data[0]
+            message_buf << "'" << require() << "' and '" << require()
                         << "' are the same file";
             break;
+
         case TARGET_DIRECTORY_NON_EXISTANT:
-            if (data.empty()) {
-                throw std::runtime_error(
-                    "TFMCommandExecutor::manage_error: expected data to be "
-                    "passed");
-            }
-            message_buf << cmd.name << ": " << "missing directory: '"
-                        << data[0];
+            message_buf << "missing directory: '" << require() << "'";
             break;
+
         case DESTINATION_NOT_A_DIRECTORY:
-            if (data.empty()) {
-                throw std::runtime_error(
-                    "TFMCommandExecutor::manage_error: expected data to be "
-                    "passed");
-            }
-            message_buf << cmd.name << ": target: '" << data[0]
-                        << ": Not a directory";
+            message_buf << "target: '" << require() << "': Not a directory";
             break;
+
         case OVERWRITE_NON_DIR_WITH_DIR:
-            if (data.size() < 2) {
-                throw std::runtime_error(
-                    "TFMCommandExecutor::manage_error: expected 2 parameters "
-                    "to be "
-                    "passed");
-            }
-            message_buf << cmd.name << ": cannot overwrite non-directory '"
-                        << data[0] << "' with directory '" << data[1] << "\'";
+            message_buf << "cannot overwrite non-directory '" << require(0)
+                        << "' with directory '" << require(1) << "'";
             break;
+
         case EXPECTED_RECURSIVE_FLAG:
-            if (data.empty()) {
-                throw std::runtime_error(
-                    "TFMCommandExecutor::manage_error: expected data to be "
-                    "passed");
-            }
-            message_buf << cmd.name << ": cannot remove '" << data[0]
+            message_buf << "cannot remove '" << require()
                         << "/': is a directory";
             break;
 
         case FILESYSTEM_ERROR:
-            if (data.empty()) {
-                throw std::runtime_error(
-                    "TFMCommandExecutor::manage_error: expected data to be "
-                    "passed");
-            }
-            message_buf << cmd.name << ": " << data[0];
+            message_buf << require();
             break;
+
         default:
             break;
     }
