@@ -15,6 +15,7 @@
 #include "config.hpp"
 #include "cursor.hpp"
 #include "dialog.hpp"
+#include "file.hpp"
 #include "path.hpp"
 #include "rows.hpp"
 #include "screen.hpp"
@@ -62,11 +63,29 @@ void TFMCommandExecutor::cd_func(const TFMCommand& cmd) {
     m_path.set_path(target_path);
 }
 
+// TODO:  Use switch statement for all flag checkings
+
 void TFMCommandExecutor::ls_func(const TFMCommand& cmd) {
     // handle flags
-    bool show_hidden_files =
-        std::any_of(cmd.flags.begin(), cmd.flags.end(),
-                    [](const std::string& flag) { return flag == "a"; });
+    bool show_hidden_files = false;
+    bool sort_according_to_modification_time = false;
+    bool long_listing = false;
+    bool human_readable = false;
+    bool reverse_order = false;
+
+    for (const auto& flag : cmd.flags) {
+        if (flag == "a") {
+            show_hidden_files = true;
+        } else if (flag == "t") {
+            sort_according_to_modification_time = true;
+        } else if (flag == "l") {
+            long_listing = true;
+        } else if (flag == "h") {
+            human_readable = true;
+        } else if (flag == "r") {
+            reverse_order = true;
+        }
+    }
 
     // initialize the map
     bool single_path = false;
@@ -112,11 +131,18 @@ void TFMCommandExecutor::ls_func(const TFMCommand& cmd) {
         }
     }
 
-    // order the vectors of each path
+    // sort the vectors of each path
     for (auto& path_file : path_file_map) {
-        std::sort(
-            path_file.second.begin(), path_file.second.end(),
-            [](const std::string& a, const std::string& b) { return a < b; });
+        if (sort_according_to_modification_time) {
+            // TODO
+        } else {
+            if (reverse_order) {
+                std::sort(path_file.second.begin(), path_file.second.end(),
+                          std::greater<>());
+            } else {
+                std::sort(path_file.second.begin(), path_file.second.end());
+            }
+        }
     }
 
     for (auto it = path_file_map.begin(); it != path_file_map.end(); it++) {
@@ -124,55 +150,68 @@ void TFMCommandExecutor::ls_func(const TFMCommand& cmd) {
 
         auto& path = it->first;
         auto& filenames = it->second;
-        bool is_last_iterator = (std::next(it) == path_file_map.end());
 
-        auto it_max_length = std::max_element(
-            filenames.begin(), filenames.end(),
-            [](const auto& a, const auto& b) {
-                return a.string().length() < b.string().length();
-            });
+        // TODO: implement scrolling FFS
+        if (!long_listing) {
+            // TODO: make this into it's own function possibly
+            bool is_last_iterator = (std::next(it) == path_file_map.end());
 
-        if (it_max_length == filenames.end()) {
-            return;
-        }
+            auto it_max_length = std::max_element(
+                filenames.begin(), filenames.end(),
+                [](const auto& a, const auto& b) {
+                    return a.string().length() < b.string().length();
+                });
 
-        size_t max_length = it_max_length->string().length() + LS_PADDING;
-        size_t cols = static_cast<size_t>(m_screen.get_cols() / max_length);
-        size_t rows = static_cast<size_t>(std::ceil(
-            static_cast<float>(filenames.size()) / static_cast<float>(cols)));
-        bool is_file = fs::is_regular_file(path);
-        std::ostringstream row_builder;
-
-        if (!single_path && !is_file) {
-            m_rows.append(path.string() + ":");
-        } else {
-            if (!single_path) {
-                m_rows.append(path.string());
+            if (it_max_length == filenames.end()) {
+                return;
             }
-            if (is_file) {
-                continue;
-            }
-        }
 
-        for (size_t i = 0; i < rows; i++) {
-            for (size_t j = 0; j < cols; j++) {
-                size_t calculated_index = j * rows + i;
-                if (calculated_index >= filenames.size()) {
+            size_t max_length = it_max_length->string().length() + LS_PADDING;
+            size_t cols = static_cast<size_t>(m_screen.get_cols() / max_length);
+            size_t rows = static_cast<size_t>(
+                std::ceil(static_cast<float>(filenames.size()) /
+                          static_cast<float>(cols)));
+            bool is_file = fs::is_regular_file(path);
+            std::ostringstream row_builder;
+
+            if (!single_path && !is_file) {
+                m_rows.append(path.string() + ":");
+            } else {
+                if (!single_path) {
+                    m_rows.append(path.string());
+                }
+                if (is_file) {
                     continue;
                 }
-
-                std::string filename =
-                    ls_format(filenames[calculated_index], max_length);
-                row_builder << filename;
             }
-            m_rows.append(row_builder.str());
 
-            row_builder.str("");
-            row_builder.clear();
-        }
+            for (size_t i = 0; i < rows; i++) {
+                for (size_t j = 0; j < cols; j++) {
+                    size_t calculated_index = j * rows + i;
+                    if (calculated_index >= filenames.size()) {
+                        continue;
+                    }
 
-        if (!is_last_iterator) {
-            m_rows.append("");
+                    std::string filename =
+                        ls_format(filenames[calculated_index], max_length);
+                    row_builder << filename;
+                }
+                m_rows.append(row_builder.str());
+
+                row_builder.str("");
+                row_builder.clear();
+            }
+
+            if (!is_last_iterator) {
+                m_rows.append("");
+            }
+        } else {
+            for (const auto& filename : filenames) {
+                const TFM::File file = m_file_manager.file_init(filename);
+                const std::string formatted =
+                    m_file_manager.str_file_details(file, human_readable);
+                m_rows.append(formatted);
+            }
         }
     }
 }

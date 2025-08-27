@@ -42,17 +42,15 @@
 
 📦 3. File Metadata and Info
 
-File size (in KB, MB, GB, human-readable)
+~~File size (in KB, MB, GB, human-readable)~~
 
-File permissions (rwx-style and octal)
+~~File permissions (rwx-style and/or octal)~~
 
-File owner and group
+~~File owner and group~~
 
-Last modification time
+~~Last modification time~~
 
-File type detection (regular, directory, symlink, device, pipe)
-
-MIME type detection (optional via libmagic)
+~~File type detection (regular, directory, symlink, device, pipe)~~
 
 🔍 4. Search and Filtering
 

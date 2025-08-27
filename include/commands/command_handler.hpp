@@ -6,6 +6,11 @@
 #include "command_mapper.hpp"
 #include "command_parser.hpp"
 
+namespace TFM {
+class FileManager;
+
+}  // namespace TFM
+
 class TFMCommandParser;
 class TFMCommandMapper;
 class TFMCommandExecutor;
@@ -42,10 +47,11 @@ class TFMCommandHandler {
      * @param dialog
      */
     TFMCommandHandler(TFMPathHandler& path, TFMRows& rows, TFMScreen& screen,
-                      TFMConfig& config, TFMCursor& cursor, TFMDialog& dialog)
+                      TFMConfig& config, TFMCursor& cursor, TFMDialog& dialog,
+                      TFM::FileManager& file_manager)
         : m_parser(),
           m_mapper(),
-          m_executor(path, rows, screen, config, cursor, dialog) {
+          m_executor(path, rows, screen, config, cursor, dialog, file_manager) {
         std::unordered_map<std::string, fn> commands_map{
             {"cd", &TFMCommandExecutor::cd_func},
             {"ls", &TFMCommandExecutor::ls_func},

@@ -7,6 +7,11 @@
 /// @brief importants required in TFMCommandHandler
 using command_func = std::function<void(const TFMCommand&)>;
 
+namespace TFM {
+class FileManager;
+
+}  // namespace TFM
+
 struct TFMCommand;
 class TFMPathHandler;
 class TFMRows;
@@ -46,6 +51,7 @@ class TFMCommandExecutor {
     TFMConfig& m_config;
     TFMCursor& m_cursor;
     TFMDialog& m_dialog;
+    TFM::FileManager& m_file_manager;
 
    public:
     /**
@@ -59,13 +65,15 @@ class TFMCommandExecutor {
      * @param dialog
      */
     TFMCommandExecutor(TFMPathHandler& path, TFMRows& rows, TFMScreen& screen,
-                       TFMConfig& config, TFMCursor& cursor, TFMDialog& dialog)
+                       TFMConfig& config, TFMCursor& cursor, TFMDialog& dialog,
+                       TFM::FileManager& file_manager)
         : m_path{path},
           m_rows{rows},
           m_screen(screen),
           m_config{config},
           m_cursor{cursor},
-          m_dialog{dialog} {}
+          m_dialog{dialog},
+          m_file_manager{file_manager} {}
 
     /**
      * @brief Destroy the TFMCommandExecutor object

@@ -1,8 +1,11 @@
 #include "file.hpp"
 
+#include <grp.h>
+#include <pwd.h>
 #include <sys/stat.h>
 
 #include <array>
+#include <cmath>
 #include <cstdint>
 #include <exception>
 #include <filesystem>
@@ -12,7 +15,6 @@
 namespace fs = std::filesystem;
 
 namespace TFM {
-
 File FileManager::file_init(const std::string& path) {
     if (!fs::exists(path)) {
         throw std::runtime_error("file with this path not found");
@@ -24,6 +26,7 @@ File FileManager::file_init(const std::string& path) {
     f.name = p.filename().string();
     f.path = fs::absolute(p);
     f.size = fs::is_regular_file(path) ? fs::file_size(path) : 0;
+    f.type = NONE;
 
     struct stat st;
     if (!stat(f.path.c_str(), &st)) {
@@ -35,9 +38,9 @@ File FileManager::file_init(const std::string& path) {
             f.type = PIPE;
         }
 
-        f.timestamps[0] = st.st_atim;
-        f.timestamps[1] = st.st_mtim;
-        f.timestamps[2] = st.st_ctim;
+        f.timestamps[0] = st.st_atim.tv_sec;
+        f.timestamps[1] = st.st_mtim.tv_sec;
+        f.timestamps[2] = st.st_ctim.tv_sec;
 
         f.uid = st.st_uid;
         f.gid = st.st_gid;
@@ -92,6 +95,9 @@ std::string FileManager::str_representation_permissions(const File& file) {
         case BLOCK_DEVICE:
             os << 'b';
             break;
+        default:
+            throw std::runtime_error(
+                "no file type exists corresponding to this file...");
     }
 
     for (uint8_t perm : file.permissions) {
@@ -117,6 +123,54 @@ std::string FileManager::str_representation_permissions(const File& file) {
     return os.str();
 }
 
-std::string FileManager::str_human_readable_size(const File& file) {}
+std::string FileManager::format_size_to_human_readable(size_t bytes) {
+    const std::array<std::string, 5> size_units = {"", "KB", "MB", "GB", "TB"};
+
+    double size = static_cast<double>(bytes);
+    uint8_t index = 0;
+
+    while (size >= 1024 && index < size_units.size() - 1) {
+        size /= 1024;
+        index++;
+    }
+
+    std::ostringstream os;
+    os << std::fixed << std::setprecision(1) << size << " "
+       << size_units[index];
+    return os.str();
+}
+
+std::string FileManager::str_file_details(const File& file,
+                                          bool human_readable) {
+    std::ostringstream os;
+
+    // format time
+    time_t tim = file.timestamps[1];
+    struct std::tm* lt = std::localtime(&tim);
+
+    char buf[64];
+    std::strftime(buf, sizeof(buf), "%b %e %H:%M", lt);
+
+    const std::string formatted_time(buf);
+
+    // get owner and group names
+    struct stat st;
+    stat(file.path.c_str(), &st);
+
+    struct passwd* pw = getpwuid(file.uid);
+    struct group* gr = getgrgid(file.gid);
+
+    // clang-format off
+	// [filetype][permissions] [num_links] [owner]  [group]  [size] [modification date] [filename]
+    // clang-format on
+
+    os << str_representation_permissions(file) << "  " << st.st_nlink << " "
+       << pw->pw_name << "  " << gr->gr_name << "   "
+       << (human_readable ? format_size_to_human_readable(file.size)
+                          : std::to_string(file.size))
+       << " " << formatted_time << " " << file.name;
+
+    return os.str();
+}
 
 }  // namespace TFM

@@ -6,11 +6,16 @@
 #include "config.hpp"
 #include "cursor.hpp"
 #include "dialog.hpp"
+#include "file.hpp"
 #include "input.hpp"
 #include "path.hpp"
 #include "renderer.hpp"
 #include "rows.hpp"
 #include "screen.hpp"
+
+namespace TFM {
+class FileManager;
+}  // Namespace TFM
 
 /**
  * @brief Central class that orchestrate all modules together
@@ -19,6 +24,7 @@
 class TFMApp {
    private:
     TFMConfig m_config;
+    TFM::FileManager m_file_manager;
     TFMCommandLine m_command_line;
     TFMScreen m_screen;
     TFMPathHandler m_path;
@@ -37,13 +43,14 @@ class TFMApp {
      */
     TFMApp()
         : m_config{},
+          m_file_manager{},
           m_command_line{},
           m_screen{},
           m_path{},
           m_command_history{},
           m_rows{m_screen},
-          m_command_handler{m_path,   m_rows,   m_screen,
-                            m_config, m_cursor, m_dialog},
+          m_command_handler{m_path,   m_rows,   m_screen,      m_config,
+                            m_cursor, m_dialog, m_file_manager},
           m_cursor{m_command_line, m_rows, m_screen, m_command_history},
 
           m_renderer{m_config, m_rows,   m_screen,
