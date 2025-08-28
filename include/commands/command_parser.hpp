@@ -5,14 +5,20 @@
 
 namespace TFM {
 
+struct CommandToken {
+    std::string name;
+    size_t index;
+};
+
 /**
  * @brief Describes a command
  *
  */
 struct Command {
-    std::string name;                ///< name of the respective command
-    std::vector<std::string> flags;  ///< any associated flags attached to it
-    std::vector<std::string> positional;  ///< expected arguments
+    std::string name;                       ///< name of the respective command
+    std::vector<CommandToken> short_flags;  ///< short flags like -a
+    std::vector<CommandToken> long_flags;   ///< long flags like --help
+    std::vector<CommandToken> positional;   ///< expected arguments
 };
 
 /**

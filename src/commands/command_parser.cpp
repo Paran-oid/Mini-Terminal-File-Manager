@@ -8,15 +8,17 @@ TFM::Command TFM::CommandParser::parse(const std::string& cmd) const {
 
     TFM::Command res;
     iss >> res.name;
+    size_t idx = 0;
 
     while (iss >> buf) {
-        // divide flags if needed
-        if (buf[0] == '-') {
+        if (buf.substr(0, 2) == "--") {
+            res.long_flags.push_back({buf.substr(2), idx++});
+        } else if (buf[0] == '-') {
             for (size_t i = 1; i < buf.length(); i++) {
-                res.flags.push_back(std::string(1, buf[i]));
+                res.short_flags.push_back({std::string{buf[i]}, idx++});
             }
         } else {
-            res.positional.push_back(buf);
+            res.positional.push_back({buf, idx++});
         }
     }
 

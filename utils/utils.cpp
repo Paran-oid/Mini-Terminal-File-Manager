@@ -6,7 +6,6 @@
 #include <sstream>
 #include <vector>
 
-// TODO: make this a part of filemanager class
 std::string ls_format(const std::string& dst, size_t spacing) {
     if (spacing <= dst.length()) return dst;
     std::string res = dst + std::string(spacing - dst.length() + 1, ' ');

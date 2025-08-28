@@ -59,13 +59,16 @@ TFM::File TFM::FileManager::file_init(const std::string& path) {
         throw std::runtime_error("stat init failed");
     }
 
-    if (!f.type) {
+    if (f.type == NO_FILE_DETECTED) {
         if (fs::is_directory(p)) {
             f.type = DIRECTORY;
         } else if (fs::is_regular_file(p)) {
             f.type = REGULAR;
         } else if (fs::is_symlink(p)) {
             f.type = SYMLINK;
+        } else {
+            throw std::runtime_error(
+                "no file type exists corresponding to this file...");
         }
     }
 

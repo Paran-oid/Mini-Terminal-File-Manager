@@ -132,31 +132,52 @@ void TFM::Input::commandline_insert(const std::string& content,
 void TFM::Input::process() {
     static int32_t previous_c;
     int32_t c = getch();
+
+    // need to store this so later on I can update previous_c
+    int32_t current_c = c;
     TFM::CursorCords cursor = m_cursor.get();
-    int32_t updated_row_off;
+    TFM::ScreenDetails screen_details = m_screen.get();
+    int32_t temp;
 
     if (c != KEY_PPAGE && c != KEY_NPAGE &&
         (previous_c == KEY_PPAGE || previous_c == KEY_NPAGE)) {
         m_cursor.move_to_end();
-    }
-
-    if (c == CTRL_KEY('q') || c == CTRL_KEY('Q')) {
-        m_config.end_program();
+        // TODO: make this work
     }
 
     switch (c) {
-        case KEY_BTAB:
-        case '\t':
+        case CTRL_KEY('q'):
+            m_config.end_program();
             break;
-
         case KEY_PPAGE:
         case KEY_NPAGE:
-            updated_row_off = static_cast<int32_t>(
-                (m_screen.get_row_off() - m_screen.get_rows()));
-            if (updated_row_off < 0) {
-                updated_row_off = 0;
+            if (c == KEY_PPAGE) {
+                temp = static_cast<int32_t>(
+                    (m_screen.get_row_off() - m_screen.get_rows()));
+
+                screen_details.row_off =
+                    static_cast<size_t>(std::max<int32_t>(0, temp));
+
+                cursor.cy = cursor.cy >= screen_details.rows
+                                ? cursor.cy - screen_details.rows
+                                : 0;
+            } else {
+                temp = static_cast<int32_t>(
+                    (m_screen.get_row_off() + m_screen.get_rows()));
+
+                screen_details.row_off =
+                    std::min(m_rows.size() - 1, static_cast<size_t>(temp));
+
+                cursor.cy = cursor.cy + screen_details.rows >= m_rows.size()
+                                ? m_rows.size() - 1
+                                : cursor.cy + screen_details.rows;
             }
-            m_screen.set_row_off(static_cast<size_t>(updated_row_off));
+
+            m_screen.set(screen_details);
+            m_cursor.set(cursor.cx, cursor.cy);
+            break;
+        case KEY_BTAB:
+        case '\t':
             break;
 
         case KEY_UP:
@@ -209,7 +230,7 @@ void TFM::Input::process() {
     if (m_config.is_in_command()) {
         commandline_insert(m_path.get_path().string(), M_COMMAND_LINE_TYPE);
     }
-    previous_c = c;
+    previous_c = current_c;
 }
 
 void TFM::Input::enter() {

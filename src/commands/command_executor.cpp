@@ -35,7 +35,7 @@ void TFM::CommandExecutor::cd_func(const TFM::Command& cmd) {
         return;
     }
 
-    std::string path_str = cmd.positional[0];
+    std::string path_str = cmd.positional[0].name;
     m_path.expand(path_str);
 
     if (path_str == "-") {
@@ -68,8 +68,6 @@ void TFM::CommandExecutor::cd_func(const TFM::Command& cmd) {
     m_path.set_path(target_path);
 }
 
-// TODO:  Use switch statement for all flag checkings
-
 void TFM::CommandExecutor::ls_func(const TFM::Command& cmd) {
     // handle flags
     bool show_hidden_files = false;
@@ -78,17 +76,25 @@ void TFM::CommandExecutor::ls_func(const TFM::Command& cmd) {
     bool human_readable = false;
     bool reverse_order = false;
 
-    for (const auto& flag : cmd.flags) {
-        if (flag == "a") {
-            show_hidden_files = true;
-        } else if (flag == "t") {
-            sort_according_to_modification_time = true;
-        } else if (flag == "l") {
-            long_listing = true;
-        } else if (flag == "h") {
-            human_readable = true;
-        } else if (flag == "r") {
-            reverse_order = true;
+    for (const auto& short_flag : cmd.short_flags) {
+        switch (short_flag.name[0]) {
+            case 'a':
+                show_hidden_files = true;
+                break;
+            case 't':
+                sort_according_to_modification_time = true;
+                break;
+            case 'l':
+                long_listing = true;
+                break;
+            case 'h':
+                human_readable = true;
+                break;
+            case 'r':
+                reverse_order = true;
+                break;
+            default:
+                break;
         }
     }
 
@@ -101,7 +107,7 @@ void TFM::CommandExecutor::ls_func(const TFM::Command& cmd) {
         single_path = true;
     } else {
         if (cmd.positional.size() == 1) {
-            const fs::path main_path = cmd.positional[0];
+            const fs::path main_path = cmd.positional[0].name;
             if (!fs::exists(main_path)) {
                 manage_error(cmd, UNAVAILABLE_DIRECTORY, {main_path});
                 return;
@@ -109,11 +115,11 @@ void TFM::CommandExecutor::ls_func(const TFM::Command& cmd) {
             path_file_map[main_path] = {};
             single_path = true;
         } else {
-            for (const std::string& arg : cmd.positional) {
-                if (!fs::exists(fs::path(arg))) {
-                    manage_error(cmd, UNAVAILABLE_DIRECTORY, {fs::path(arg)});
+            for (const auto& [name, index] : cmd.positional) {
+                if (!fs::exists(fs::path(name))) {
+                    manage_error(cmd, UNAVAILABLE_DIRECTORY, {fs::path(name)});
                 } else {
-                    path_file_map[fs::path(arg)] = {};
+                    path_file_map[fs::path(name)] = {};
                 }
             }
         }
@@ -158,7 +164,6 @@ void TFM::CommandExecutor::ls_func(const TFM::Command& cmd) {
 
         // TODO: implement scrolling FFS
         if (!long_listing) {
-            // TODO: make this into it's own function possibly
             bool is_last_iterator = (std::next(it) == path_file_map.end());
 
             auto it_max_length = std::max_element(
@@ -245,24 +250,31 @@ void TFM::CommandExecutor::cp_func(const TFM::Command& cmd) {
     bool is_verbose = false;
     bool is_recursive = false;
 
-    for (const std::string& flag : cmd.flags) {
-        if (flag == "i") {
-            is_interactive = true;
-        } else if (flag == "f") {
-            is_forced = true;
-        } else if (flag == "u") {
-            is_src_newer_than_dest = true;
-        } else if (flag == "r") {
-            is_recursive = true;
-        } else if (flag == "v") {
-            is_verbose = true;
+    for (const auto& short_flag : cmd.short_flags) {
+        switch (short_flag.name[0]) {
+            case 'i':
+                is_interactive = true;
+                break;
+            case 'f':
+                is_forced = true;
+                break;
+            case 'u':
+                is_src_newer_than_dest = true;
+                break;
+            case 'r':
+                is_recursive = true;
+                break;
+            case 'v':
+                is_verbose = true;
+                break;
+            default:
+                break;
         }
     }
-
     std::vector<std::string> src_paths;
 
     for (size_t i = 0; i < cmd.positional.size() - 1; i++) {
-        const std::string& arg = cmd.positional[i];
+        const std::string& arg = cmd.positional[i].name;
         if (!fs::exists(arg)) {
             manage_error(cmd, MISSING_FILE_SOURCE, {arg});
         } else {
@@ -270,7 +282,7 @@ void TFM::CommandExecutor::cp_func(const TFM::Command& cmd) {
         }
     }
 
-    std::string dst = fs::absolute(cmd.positional.back()).string();
+    std::string dst = fs::absolute(cmd.positional.back().name).string();
     std::ostringstream os;
     for (const auto& src_path : src_paths) {
         fs::path src(src_path);
@@ -370,24 +382,6 @@ void TFM::CommandExecutor::cp_func(const TFM::Command& cmd) {
 }
 
 void TFM::CommandExecutor::mv_func(const TFM::Command& cmd) {
-    // syntax
-    // mv [options] src dst
-    // rename file: mv file1.txt file2.txt
-    // move file: file.txt path/to/dst/
-    // mv file1.txt file2.txt file3.txt /backup/
-    // rename and move: mv file.txt /path/to/destination/newname.txt
-    // mv myfolder/ /new/location/
-    // mv oldfolder newfolder
-
-    /*
-    Info about flags:
-    Useful Options
-        Option	Meaning
-        -i	Interactive: asks before overwriting existing files
-        -n	No-clobber: don’t overwrite existing files
-        -v	Verbose: shows what is happening
-    */
-
     if (cmd.positional.size() < 2) {
         manage_error(cmd, MISSING_FILE_OPERAND);
         return;
@@ -397,23 +391,29 @@ void TFM::CommandExecutor::mv_func(const TFM::Command& cmd) {
     bool is_verbose = false;
     bool is_no_clobber = false;
 
-    for (const auto& flag : cmd.flags) {
-        if (flag == "i") {
-            is_interactive = true;
-        } else if (flag == "v") {
-            is_verbose = true;
-        } else if (flag == "n") {
-            is_no_clobber = true;
+    for (const auto& short_flag : cmd.short_flags) {
+        switch (short_flag.name[0]) {
+            case 'i':
+                is_interactive = true;
+                break;
+            case 'v':
+                is_verbose = true;
+                break;
+            case 'n':
+                is_no_clobber = true;
+                break;
+            default:
+                break;
         }
     }
 
-    fs::path dst_path = cmd.positional.back();
+    fs::path dst_path = cmd.positional.back().name;
     std::vector<fs::path> src_paths;
 
     bool dst_is_directory = fs::exists(dst_path) && fs::is_directory(dst_path);
 
     for (uint32_t i = 0; i < cmd.positional.size() - 1; i++) {
-        const fs::path arg = cmd.positional[i];
+        const fs::path arg = cmd.positional[i].name;
         if (!fs::exists(arg)) {
             manage_error(cmd, MISSING_FILE_DESTINATION, {arg.filename()});
             return;
@@ -513,15 +513,22 @@ void TFM::CommandExecutor::rm_func(const TFM::Command& cmd) {
     bool is_recursive = false;
     bool is_forced = false;
 
-    for (const auto& flag : cmd.flags) {
-        if (flag == "i") {
-            is_interactive = true;
-        } else if (flag == "v") {
-            is_verbose = true;
-        } else if (flag == "r") {
-            is_recursive = true;
-        } else if (flag == "f") {
-            is_forced = true;
+    for (const auto& short_flag : cmd.short_flags) {
+        switch (short_flag.name[0]) {
+            case 'i':
+                is_interactive = true;
+                break;
+            case 'v':
+                is_verbose = true;
+                break;
+            case 'r':
+                is_recursive = true;
+                break;
+            case 'f':
+                is_forced = true;
+                break;
+            default:
+                break;
         }
     }
 
@@ -535,8 +542,8 @@ void TFM::CommandExecutor::rm_func(const TFM::Command& cmd) {
     }
 
     std::ostringstream os;
-    for (const auto& path_str : cmd.positional) {
-        fs::path path(path_str);
+    for (const auto& [name, index] : cmd.positional) {
+        fs::path path(name);
         if (!fs::exists(path) && !is_forced) {
             manage_error(cmd, UNAVAILABLE_DIRECTORY, {path.filename()});
             continue;
@@ -598,12 +605,12 @@ void TFM::CommandExecutor::mkdir_func(const TFM::Command& cmd) {
         return;
     }
 
-    for (const auto& arg : cmd.positional) {
-        fs::path path = m_path.get_path() / arg;
+    for (const auto& [name, index] : cmd.positional) {
+        fs::path path = m_path.get_path() / name;
         try {
             fs::create_directories(path);
         } catch (const fs::filesystem_error& e) {
-            manage_error(cmd, FAILED_DIRECTORY_CREATION, {arg});
+            manage_error(cmd, FAILED_DIRECTORY_CREATION, {name});
         }
     }
 }
@@ -613,13 +620,19 @@ void TFM::CommandExecutor::touch_func(const TFM::Command& cmd) {
     bool change_just_modification_time = false;
     bool no_file_to_be_created = false;
 
-    for (const std::string& flag : cmd.flags) {
-        if (flag == "a") {
-            change_just_access_time = true;
-        } else if (flag == "m") {
-            change_just_modification_time = true;
-        } else if (flag == "c") {
-            no_file_to_be_created = true;
+    for (const auto& short_flag : cmd.short_flags) {
+        switch (short_flag.name[0]) {
+            case 'a':
+                change_just_access_time = true;
+                break;
+            case 'm':
+                change_just_modification_time = true;
+                break;
+            case 'c':
+                no_file_to_be_created = true;
+                break;
+            default:
+                break;
         }
     }
 
@@ -631,8 +644,8 @@ void TFM::CommandExecutor::touch_func(const TFM::Command& cmd) {
         return;
     }
 
-    for (const std::string& arg : cmd.positional) {
-        fs::path path = fs::path(arg);
+    for (const auto& [name, index] : cmd.positional) {
+        fs::path path = fs::path(name);
 
         if (fs::exists(path)) {
             if (change_just_modification_time) {

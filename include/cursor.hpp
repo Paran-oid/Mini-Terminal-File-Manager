@@ -74,6 +74,14 @@ class Cursor {
     void set(size_t cx, size_t cy) { m_app_cursor = {cx, cy}; }
 
     /**
+     * @brief Sets the current cursor coordinates using a CursorCords struct
+     * instead
+     *
+     * @param coords
+     */
+    void set(const CursorCords& coords) { m_app_cursor = coords; }
+
+    /**
      * @brief controls movement of cursor (arrows)
      *
      * @param direction
@@ -122,7 +130,8 @@ class Cursor {
      * @return false
      */
     bool is_cursor_at_end() {
-        return m_app_cursor.cx >= m_rows.at(m_app_cursor.cy).size();
+        return (m_app_cursor.cx >= m_rows.at(m_app_cursor.cy).size()) &&
+               (m_app_cursor.cy == m_rows.size() - 1);
     }
 };
 
