@@ -15,7 +15,7 @@
 #include "screen.hpp"
 #include "utils.hpp"
 
-std::vector<std::string> TFMInput::extract_current_rows() {
+std::vector<std::string> TFM::Input::extract_current_rows() {
     std::vector<std::string> res;
     size_t current_index = m_command_line.get_last_row_index();
 
@@ -26,7 +26,7 @@ std::vector<std::string> TFMInput::extract_current_rows() {
     return res;
 }
 
-std::string TFMInput::extract_input_buf() {
+std::string TFM::Input::extract_input_buf() {
     std::ostringstream buf;
     size_t current_index = m_command_line.get_last_row_index();
 
@@ -41,8 +41,8 @@ std::string TFMInput::extract_input_buf() {
     return buf.str();
 }
 
-void TFMInput::append_char(char c) {
-    const TFMCursorCords& cursor = m_cursor.get();
+void TFM::Input::append_char(char c) {
+    const TFM::CursorCords& cursor = m_cursor.get();
 
     size_t cursor_cx = cursor.cx;
     size_t cursor_cy = cursor.cy;
@@ -66,7 +66,7 @@ void TFMInput::append_char(char c) {
     m_rows.refresh(m_command_line.get_last_row_index());
 }
 
-void TFMInput::remove_char() {
+void TFM::Input::remove_char() {
     static bool callback = false;
 
     if (m_cursor.is_cursor_at_command_line()) {
@@ -74,7 +74,7 @@ void TFMInput::remove_char() {
     }
 
     // copy of cursor because we will need to get pos of cursors again later
-    TFMCursorCords cursor = m_cursor.get();
+    TFM::CursorCords cursor = m_cursor.get();
 
     size_t cursor_cx = cursor.cx;
     size_t cursor_cy = cursor.cy;
@@ -109,10 +109,10 @@ void TFMInput::remove_char() {
     m_rows.refresh(m_command_line.get_last_row_index());
 }
 
-void TFMInput::commandline_insert(const std::string& content,
-                                  TFMMessageType type) {
+void TFM::Input::commandline_insert(const std::string& content,
+                                    TFM::MessageType type) {
     std::string formatted;
-    if (type == TFMMessageType::M_COMMAND_LINE_TYPE) {
+    if (type == TFM::MessageType::M_COMMAND_LINE_TYPE) {
         // formatted = m_path.get_path().string() + ":~$ ";
         formatted = content + ":~$ ";
     } else {
@@ -122,17 +122,17 @@ void TFMInput::commandline_insert(const std::string& content,
     m_rows.append(formatted);
     m_cursor.set(formatted.length() % m_screen.get_cols(), m_rows.size() - 1);
 
-    const TFMCommandLineDetails new_command_line = {
+    const TFM::CommandLineDetails new_command_line = {
         formatted, m_rows.size() - 1, formatted.size()};
 
     m_command_line.set(new_command_line);
     m_config.disable_command();
 }
 
-void TFMInput::process() {
+void TFM::Input::process() {
     static int32_t previous_c;
     int32_t c = getch();
-    TFMCursorCords cursor = m_cursor.get();
+    TFM::CursorCords cursor = m_cursor.get();
     int32_t updated_row_off;
 
     if (c != KEY_PPAGE && c != KEY_NPAGE &&
@@ -212,7 +212,7 @@ void TFMInput::process() {
     previous_c = c;
 }
 
-void TFMInput::enter() {
+void TFM::Input::enter() {
     if (m_cursor.get().cx == 0) {
         m_cursor.move(KEY_LEFT);
         m_rows.remove_last();

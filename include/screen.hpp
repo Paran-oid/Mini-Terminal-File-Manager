@@ -3,11 +3,13 @@
 #include <cstddef>
 #include <cstdint>
 
+namespace TFM {
+
 /**
  * @brief Describes the details of the current screen
  *
  */
-struct TFMScreenDetails {
+struct ScreenDetails {
     size_t rows;     ///< max rows of screen
     size_t cols;     ///< max cols of screen
     size_t row_off;  ///< row offset of current screen
@@ -18,9 +20,9 @@ struct TFMScreenDetails {
  * settings
  *
  */
-class TFMScreen {
+class Screen {
    private:
-    TFMScreenDetails m_app_screen;
+    ScreenDetails m_app_screen;
 
     /**
      * @brief Handles app's exit
@@ -40,40 +42,40 @@ class TFMScreen {
    public:
     /**
      * @brief static public member used primarly to assign it to current
-     * TFMScreen class and to be able to handle updating window dimensions
+     * Screen class and to be able to handle updating window dimensions
      * directly
      *
      */
-    static TFMScreen* ms_instance;
+    static Screen* ms_instance;
 
     /**
-     * @brief Construct a new TFMScreen object
+     * @brief Construct a new Screen object
      *
      */
-    TFMScreen() : m_app_screen{0, 0, 0} {
+    Screen() : m_app_screen{0, 0, 0} {
         terminal_init();
         update_dimensions(0);
     }
 
     /**
-     * @brief Destroy the TFMScreen object
+     * @brief Destroy the Screen object
      *
      */
-    ~TFMScreen() { terminal_destroy(); };
+    ~Screen() { terminal_destroy(); };
 
     /**
      * @brief Get screen details
      *
-     * @return TFMScreenDetails
+     * @return ScreenDetails
      */
-    TFMScreenDetails get() const { return m_app_screen; }
+    ScreenDetails get() const { return m_app_screen; }
 
     /**
      * @brief Set screen details
      *
      * @param new_screen
      */
-    void set(const TFMScreenDetails& new_screen) { m_app_screen = new_screen; }
+    void set(const ScreenDetails& new_screen) { m_app_screen = new_screen; }
 
     /**
      * @brief Get the max rows
@@ -136,3 +138,5 @@ class TFMScreen {
      */
     void terminal_destroy();
 };
+
+}  // namespace TFM

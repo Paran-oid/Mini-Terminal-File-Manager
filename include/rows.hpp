@@ -4,33 +4,35 @@
 #include <string>
 #include <vector>
 
+namespace TFM {
+
 using diff_t = std::vector<std::string>::difference_type;
 
-class TFMScreen;
+class Screen;
 
 /**
  * @brief Manages everything related to rows
  *
  */
-class TFMRows {
+class Rows {
    private:
-    TFMScreen& m_screen;
+    Screen& m_screen;
 
     std::vector<std::string> m_app_rows;
 
    public:
     /**
-     * @brief Construct a new TFMRows object
+     * @brief Construct a new Rows object
      *
      * @param screen
      */
-    TFMRows(TFMScreen& screen) : m_screen{screen} {};
+    Rows(Screen& screen) : m_screen{screen} {};
 
     /**
-     * @brief Destroy the TFMRows object
+     * @brief Destroy the Rows object
      *
      */
-    ~TFMRows() = default;
+    ~Rows() = default;
 
     /**
      * @brief Gets row at index (reference)
@@ -133,3 +135,5 @@ class TFMRows {
      */
     bool is_empty();
 };
+
+}  // namespace TFM

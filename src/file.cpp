@@ -14,8 +14,7 @@
 
 namespace fs = std::filesystem;
 
-namespace TFM {
-File FileManager::file_init(const std::string& path) {
+TFM::File TFM::FileManager::file_init(const std::string& path) {
     if (!fs::exists(path)) {
         throw std::runtime_error("file with this path not found");
     }
@@ -26,7 +25,7 @@ File FileManager::file_init(const std::string& path) {
     f.name = p.filename().string();
     f.path = fs::absolute(p);
     f.size = fs::is_regular_file(path) ? fs::file_size(path) : 0;
-    f.type = NONE;
+    f.type = NO_FILE_DETECTED;
 
     struct stat st;
     if (!stat(f.path.c_str(), &st)) {
@@ -73,7 +72,7 @@ File FileManager::file_init(const std::string& path) {
     return f;
 }
 
-std::string FileManager::str_representation_permissions(const File& file) {
+std::string TFM::FileManager::str_representation_permissions(const File& file) {
     std::ostringstream os;
 
     switch (file.type) {
@@ -123,7 +122,7 @@ std::string FileManager::str_representation_permissions(const File& file) {
     return os.str();
 }
 
-std::string FileManager::format_size_to_human_readable(size_t bytes) {
+std::string TFM::FileManager::format_size_to_human_readable(size_t bytes) {
     const std::array<std::string, 5> size_units = {"", "KB", "MB", "GB", "TB"};
 
     double size = static_cast<double>(bytes);
@@ -140,8 +139,8 @@ std::string FileManager::format_size_to_human_readable(size_t bytes) {
     return os.str();
 }
 
-std::string FileManager::str_file_details(const File& file,
-                                          bool human_readable) {
+std::string TFM::FileManager::str_file_details(const File& file,
+                                               bool human_readable) {
     std::ostringstream os;
 
     // format time
@@ -172,5 +171,3 @@ std::string FileManager::str_file_details(const File& file,
 
     return os.str();
 }
-
-}  // namespace TFM

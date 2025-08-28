@@ -3,11 +3,13 @@
 #include <cstdint>
 #include <string>
 
+namespace TFM {
+
 /**
  * @brief Describes a command line's content
  *
  */
-struct TFMCommandLineDetails {
+struct CommandLineDetails {
     std::string data;       ///< content of this precise command
     size_t last_row_index;  ///< last row index
     size_t size;            ///< allocated size
@@ -17,36 +19,36 @@ struct TFMCommandLineDetails {
  * @brief Handles command line related functionalities
  *
  */
-class TFMCommandLine {
+class CommandLine {
    private:
-    TFMCommandLineDetails m_app_command_line;
+    CommandLineDetails m_app_command_line;
 
    public:
     /**
-     * @brief Construct a new TFMCommandLine object
+     * @brief Construct a new CommandLine object
      *
      */
-    TFMCommandLine() = default;
+    CommandLine() = default;
 
     /**
-     * @brief Destroy the TFMCommandLine object
+     * @brief Destroy the CommandLine object
      *
      */
-    ~TFMCommandLine() = default;
+    ~CommandLine() = default;
 
     /**
      * @brief Gets the current command line
      *
-     * @return TFMCommandLineDetails
+     * @return CommandLineDetails
      */
-    TFMCommandLineDetails get() const { return m_app_command_line; }
+    CommandLineDetails get() const { return m_app_command_line; }
 
     /**
      * @brief Sets the current command line
      *
      * @param command_line
      */
-    void set(const TFMCommandLineDetails& command_line) {
+    void set(const CommandLineDetails& command_line) {
         m_app_command_line = command_line;
     }
 
@@ -96,3 +98,5 @@ class TFMCommandLine {
      */
     void set_size(size_t s) { m_app_command_line.size = s; }
 };
+
+}  // namespace TFM

@@ -5,41 +5,20 @@
 #include <string>
 #include <vector>
 
-// TODO: consider creating a namespace for everything related to TFM
-// TODO: instead of TFMFile do TFM::File ie
-
 namespace TFM {
-
-/*
-
-we want to make ls able to output something like this when specific flags are
-entered
-
-aziz@aziz-Vostro-3525:~/Documents/Coding/Projects/Software/Terminal File
-Manager/build/test_dir$ ls -l
-total 4
--rw-rw-r-- 1 aziz aziz    0 Aug 23 16:35 a
--rw-rw-r-- 1 aziz aziz    0 Aug 23 16:35 b
-drwxrwxr-x 2 aziz aziz 4096 Aug 23 16:37 cool_dir
--rw-rw-r-- 1 aziz aziz    0 Aug 26 14:27 file.txt
-aziz@aziz-Vostro-3525:~/Documents/Coding/Projects/Software/Terminal File
-Manager/build/test_dir$
-
-
-*/
 
 #define READ_FLAG(perm) (((perm) >> 2) & 0x01)
 #define WRITE_FLAG(perm) (((perm) >> 1) & 0x01)
 #define EXECUTE_FLAG(perm) (((perm) >> 0) & 0x01)
 
 enum FileType {
-    NONE,
     DIRECTORY,
     REGULAR,
     SYMLINK,
     PIPE,
     BLOCK_DEVICE,
     CHAR_DEVICE,
+    NO_FILE_DETECTED
 };
 enum FilePermissions { READ = 4, WRITE = 2, EXECUTE = 1 };
 

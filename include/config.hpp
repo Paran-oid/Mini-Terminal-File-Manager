@@ -4,12 +4,14 @@
 #include <string>
 #include <vector>
 
+namespace TFM {
+
 /**
  * @brief configures defined program states and holds current username
  * of the user
  *
  */
-class TFMConfig {
+class Config {
    private:
     std::string m_username;
     bool m_command_state;
@@ -17,16 +19,16 @@ class TFMConfig {
 
    public:
     /**
-     * @brief Construct a new TFMConfig object
+     * @brief Construct a new Config object
      *
      */
-    TFMConfig() { m_username = std::getenv("USER"); };
+    Config() { m_username = std::getenv("USER"); };
 
     /**
-     * @brief Destroy the TFMConfig object
+     * @brief Destroy the Config object
      *
      */
-    ~TFMConfig() = default;
+    ~Config() = default;
 
     /**
      * @brief Get the username object
@@ -82,3 +84,5 @@ class TFMConfig {
      */
     void end_program() { m_program_state = 0; }
 };
+
+}  // namespace TFM

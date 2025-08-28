@@ -5,12 +5,14 @@
 #include <string>
 #include <vector>
 
+namespace TFM {
+
 /**
  * @brief Handles command history (particularily useful when user pressed either
  * arrow up or arrow down)
  *
  */
-class TFMCommandHistory {
+class CommandHistory {
    private:
     std::stack<std::vector<std::string>> m_previous_stack;
     std::stack<std::vector<std::string>> m_upcoming_stack;
@@ -18,16 +20,16 @@ class TFMCommandHistory {
 
    public:
     /**
-     * @brief Construct a new TFMCommandHistory object
+     * @brief Construct a new CommandHistory object
      *
      */
-    TFMCommandHistory() = default;
+    CommandHistory() = default;
 
     /**
-     * @brief Destroy the TFMCommandHistory object
+     * @brief Destroy the CommandHistory object
      *
      */
-    ~TFMCommandHistory() = default;
+    ~CommandHistory() = default;
 
     /**
      * @brief Get the last entry object
@@ -121,3 +123,5 @@ class TFMCommandHistory {
      */
     void clear();
 };
+
+}  // namespace TFM

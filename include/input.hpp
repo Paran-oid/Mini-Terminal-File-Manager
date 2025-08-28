@@ -4,34 +4,36 @@
 #include <string>
 #include <vector>
 
-struct TFMCursorCords;
+namespace TFM {
 
-class TFMConfig;
-class TFMCursor;
-class TFMRows;
-class TFMCommandLine;
-class TFMCommandHistory;
-class TFMScreen;
-class TFMCommandHandler;
-class TFMPathHandler;
-class TFMRenderer;
+struct CursorCords;
 
-enum TFMMessageType { M_COMMAND_LINE_TYPE, M_OTHER, M_NONE };
+class Config;
+class Cursor;
+class Rows;
+class CommandLine;
+class CommandHistory;
+class Screen;
+class CommandHandler;
+class PathHandler;
+class Renderer;
+
+enum MessageType { M_COMMAND_LINE_TYPE, M_OTHER, MESSAGE_TYPE_COUNT };
 
 /**
  * @brief Handles everything related to input (beside prompting)
  *
  */
-class TFMInput {
+class Input {
    private:
-    TFMConfig& m_config;
-    TFMCursor& m_cursor;
-    TFMRows& m_rows;
-    TFMCommandLine& m_command_line;
-    TFMCommandHistory& m_command_history;
-    TFMScreen& m_screen;
-    TFMCommandHandler& m_command_handler;
-    TFMPathHandler& m_path;
+    Config& m_config;
+    Cursor& m_cursor;
+    Rows& m_rows;
+    CommandLine& m_command_line;
+    CommandHistory& m_command_history;
+    Screen& m_screen;
+    CommandHandler& m_command_handler;
+    PathHandler& m_path;
 
     /**
      * @brief extracts current rows (command line content inclusive)
@@ -66,14 +68,14 @@ class TFMInput {
      */
     void enter();
 
-    void commandline_insert(const std::string& content, TFMMessageType type);
+    void commandline_insert(const std::string& content, MessageType type);
 
-    friend class TFMDialog;
-    friend class TFMApp;
+    friend class Dialog;
+    friend class App;
 
    public:
     /**
-     * @brief Construct a new TFMInput object
+     * @brief Construct a new Input object
      *
      * @param config
      * @param cursor
@@ -84,10 +86,9 @@ class TFMInput {
      * @param command_handler
      * @param path
      */
-    TFMInput(TFMConfig& config, TFMCursor& cursor, TFMRows& rows,
-             TFMCommandLine& command_line, TFMCommandHistory& command_history,
-             TFMScreen& screen, TFMCommandHandler& command_handler,
-             TFMPathHandler& path)
+    Input(Config& config, Cursor& cursor, Rows& rows, CommandLine& command_line,
+          CommandHistory& command_history, Screen& screen,
+          CommandHandler& command_handler, PathHandler& path)
         : m_config{config},
           m_cursor{cursor},
           m_rows{rows},
@@ -98,10 +99,10 @@ class TFMInput {
           m_path{path} {}
 
     /**
-     * @brief Destroy the TFMInput object
+     * @brief Destroy the Input object
      *
      */
-    ~TFMInput() = default;
+    ~Input() = default;
 
     /**
      * @brief Processes user input
@@ -116,3 +117,5 @@ class TFMInput {
      * @param type
      */
 };
+
+}  // namespace TFM

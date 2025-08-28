@@ -4,23 +4,21 @@
 
 #include "command_parser.hpp"
 
-/// @brief importants required in TFMCommandHandler
-using command_func = std::function<void(const TFMCommand&)>;
-
 namespace TFM {
+/// @brief importants required in CommandHandler
+using command_func = std::function<void(const Command&)>;
+
+struct Command;
+
 class FileManager;
+class PathHandler;
+class Rows;
+class Screen;
+class Config;
+class Cursor;
+class Dialog;
 
-}  // namespace TFM
-
-struct TFMCommand;
-class TFMPathHandler;
-class TFMRows;
-class TFMScreen;
-class TFMConfig;
-class TFMCursor;
-class TFMDialog;
-
-enum TFMCommandErrorCode {
+enum CommandErrorCode {
     INVALID_COMMAND,
     UNAVAILABE_DIRECTORY_OR_FILE,
     UNAVAILABLE_DIRECTORY,
@@ -36,26 +34,26 @@ enum TFMCommandErrorCode {
     SAME_FILE_PASSED,
     EXPECTED_RECURSIVE_FLAG,
     FILESYSTEM_ERROR,
-    NONE
+    UNKNOWN_ERROR
 };
 
 /**
  * @brief Executes passed commands
  *
  */
-class TFMCommandExecutor {
+class CommandExecutor {
    private:
-    TFMPathHandler& m_path;
-    TFMRows& m_rows;
-    TFMScreen& m_screen;
-    TFMConfig& m_config;
-    TFMCursor& m_cursor;
-    TFMDialog& m_dialog;
-    TFM::FileManager& m_file_manager;
+    PathHandler& m_path;
+    Rows& m_rows;
+    Screen& m_screen;
+    Config& m_config;
+    Cursor& m_cursor;
+    Dialog& m_dialog;
+    FileManager& m_file_manager;
 
    public:
     /**
-     * @brief Construct a new TFMCommandExecutor object
+     * @brief Construct a new CommandExecutor object
      *
      * @param path
      * @param rows
@@ -64,9 +62,9 @@ class TFMCommandExecutor {
      * @param cursor
      * @param dialog
      */
-    TFMCommandExecutor(TFMPathHandler& path, TFMRows& rows, TFMScreen& screen,
-                       TFMConfig& config, TFMCursor& cursor, TFMDialog& dialog,
-                       TFM::FileManager& file_manager)
+    CommandExecutor(PathHandler& path, Rows& rows, Screen& screen,
+                    Config& config, Cursor& cursor, Dialog& dialog,
+                    FileManager& file_manager)
         : m_path{path},
           m_rows{rows},
           m_screen(screen),
@@ -76,10 +74,10 @@ class TFMCommandExecutor {
           m_file_manager{file_manager} {}
 
     /**
-     * @brief Destroy the TFMCommandExecutor object
+     * @brief Destroy the CommandExecutor object
      *
      */
-    ~TFMCommandExecutor() = default;
+    ~CommandExecutor() = default;
 
     /**
      * @brief Clears the terminal screen
@@ -91,7 +89,7 @@ class TFMCommandExecutor {
      * clear
      * @endcode
      */
-    void clear_func(const TFMCommand& cmd);
+    void clear_func(const Command& cmd);
 
     /**
      * @brief Changes the current directory
@@ -103,7 +101,7 @@ class TFMCommandExecutor {
      * cd <directory>
      * @endcode
      */
-    void cd_func(const TFMCommand& cmd);
+    void cd_func(const Command& cmd);
 
     /**
      * @brief Lists files and directories
@@ -115,7 +113,7 @@ class TFMCommandExecutor {
      * ls [options] [directory]
      * @endcode
      */
-    void ls_func(const TFMCommand& cmd);
+    void ls_func(const Command& cmd);
 
     /**
      * @brief Prints the current working directory
@@ -127,7 +125,7 @@ class TFMCommandExecutor {
      * pwd
      * @endcode
      */
-    void pwd_func(const TFMCommand& cmd);
+    void pwd_func(const Command& cmd);
 
     /**
      * @brief Displays the current user
@@ -139,7 +137,7 @@ class TFMCommandExecutor {
      * whoami
      * @endcode
      */
-    void whoami_func(const TFMCommand& cmd);
+    void whoami_func(const Command& cmd);
 
     /**
      * @brief Concatenates and displays file content
@@ -151,7 +149,7 @@ class TFMCommandExecutor {
      * cat <file1> [file2 ...]
      * @endcode
      */
-    void cat_func(const TFMCommand& cmd);
+    void cat_func(const Command& cmd);
 
     /**
      * @brief Copies files or directories
@@ -163,7 +161,7 @@ class TFMCommandExecutor {
      * cp <source> <destination>
      * @endcode
      */
-    void cp_func(const TFMCommand& cmd);
+    void cp_func(const Command& cmd);
 
     /**
      * @brief Moves or renames files or directories
@@ -175,7 +173,7 @@ class TFMCommandExecutor {
      * mv <source> <destination>
      * @endcode
      */
-    void mv_func(const TFMCommand& cmd);
+    void mv_func(const Command& cmd);
 
     /**
      * @brief Removes files or directories
@@ -187,7 +185,7 @@ class TFMCommandExecutor {
      * rm [options] <file1> [file2 ...]
      * @endcode
      */
-    void rm_func(const TFMCommand& cmd);
+    void rm_func(const Command& cmd);
 
     /**
      * @brief Creates new directories
@@ -199,7 +197,7 @@ class TFMCommandExecutor {
      * mkdir <directory_name>
      * @endcode
      */
-    void mkdir_func(const TFMCommand& cmd);
+    void mkdir_func(const Command& cmd);
 
     /**
      * @brief Creates empty files
@@ -211,7 +209,7 @@ class TFMCommandExecutor {
      * touch <file_name>
      * @endcode
      */
-    void touch_func(const TFMCommand& cmd);
+    void touch_func(const Command& cmd);
 
     /**
      * @brief Handles errors (doesn't crush the program whatsoever)
@@ -220,6 +218,8 @@ class TFMCommandExecutor {
      * @param code error_code passed
      * @param data external data (required for some commands and others not)
      */
-    void manage_error(const TFMCommand& cmd, TFMCommandErrorCode code,
+    void manage_error(const Command& cmd, CommandErrorCode code,
                       const std::vector<std::string> data = {});
 };
+
+}  // namespace TFM

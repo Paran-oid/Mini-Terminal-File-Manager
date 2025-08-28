@@ -2,17 +2,17 @@
 
 #include "command_executor.hpp"
 
-void TFMCommandMapper::register_command(const std::string& name,
-                                        command_func func) {
+void TFM::CommandMapper::register_command(const std::string& name,
+                                          command_func func) {
     m_match_table[name] = func;
 }
 
-std::unordered_map<std::string, command_func>::iterator TFMCommandMapper::find(
-    const std::string& name) {
+std::unordered_map<std::string, TFM::command_func>::iterator
+TFM::CommandMapper::find(const std::string& name) {
     return m_match_table.find(name);
 }
 
-std::unordered_map<std::string, command_func>::iterator
-TFMCommandMapper::end() {
+std::unordered_map<std::string, TFM::command_func>::iterator
+TFM::CommandMapper::end() {
     return m_match_table.end();
 }

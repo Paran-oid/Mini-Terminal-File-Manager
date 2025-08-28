@@ -14,34 +14,32 @@
 #include "screen.hpp"
 
 namespace TFM {
-class FileManager;
-}  // Namespace TFM
 
 /**
  * @brief Central class that orchestrate all modules together
  *
  */
-class TFMApp {
+class App {
    private:
-    TFMConfig m_config;
-    TFM::FileManager m_file_manager;
-    TFMCommandLine m_command_line;
-    TFMScreen m_screen;
-    TFMPathHandler m_path;
-    TFMCommandHistory m_command_history;
-    TFMRows m_rows;
-    TFMCommandHandler m_command_handler;
-    TFMCursor m_cursor;
-    TFMRenderer m_renderer;
-    TFMInput m_input;
-    TFMDialog m_dialog;
+    Config m_config;
+    FileManager m_file_manager;
+    CommandLine m_command_line;
+    Screen m_screen;
+    PathHandler m_path;
+    CommandHistory m_command_history;
+    Rows m_rows;
+    CommandHandler m_command_handler;
+    Cursor m_cursor;
+    Renderer m_renderer;
+    Input m_input;
+    Dialog m_dialog;
 
    public:
     /**
      * @brief Construct a new TFMApp object
      *
      */
-    TFMApp()
+    App()
         : m_config{},
           m_file_manager{},
           m_command_line{},
@@ -69,10 +67,10 @@ class TFMApp {
     }
 
     /**
-     * @brief Destroy the TFMApp object
+     * @brief Destroy the App object
      *
      */
-    ~TFMApp() {
+    ~App() {
         m_config.disable_command();
         m_config.end_program();
     }
@@ -85,7 +83,7 @@ class TFMApp {
         m_screen.terminal_init();
 
         m_input.commandline_insert(m_path.get_path().string(),
-                                   TFMMessageType::M_COMMAND_LINE_TYPE);
+                                   MessageType::M_COMMAND_LINE_TYPE);
         while (m_config.is_program_running()) {
             m_renderer.display();
             m_input.process();
@@ -94,3 +92,5 @@ class TFMApp {
         m_screen.terminal_destroy();
     }
 };
+
+}  // namespace TFM

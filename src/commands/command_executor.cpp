@@ -23,14 +23,14 @@
 
 #define LS_PADDING 2
 
-void TFMCommandExecutor::clear_func(const TFMCommand& cmd) {
+void TFM::CommandExecutor::clear_func(const TFM::Command& cmd) {
     (void)cmd;
     m_rows.clear();
     m_cursor.set(0, 0);
     m_screen.set_row_off(0);
 }
 
-void TFMCommandExecutor::cd_func(const TFMCommand& cmd) {
+void TFM::CommandExecutor::cd_func(const TFM::Command& cmd) {
     if (cmd.positional.empty()) {
         return;
     }
@@ -51,6 +51,11 @@ void TFMCommandExecutor::cd_func(const TFMCommand& cmd) {
         return;
     }
 
+    if (!fs::is_directory(target_path)) {
+        manage_error(cmd, DESTINATION_NOT_A_DIRECTORY, {target_path});
+        return;
+    }
+
     try {
         // handles symlinks and relative paths
         target_path = fs::canonical(target_path);
@@ -65,7 +70,7 @@ void TFMCommandExecutor::cd_func(const TFMCommand& cmd) {
 
 // TODO:  Use switch statement for all flag checkings
 
-void TFMCommandExecutor::ls_func(const TFMCommand& cmd) {
+void TFM::CommandExecutor::ls_func(const TFM::Command& cmd) {
     // handle flags
     bool show_hidden_files = false;
     bool sort_according_to_modification_time = false;
@@ -216,19 +221,19 @@ void TFMCommandExecutor::ls_func(const TFMCommand& cmd) {
     }
 }
 
-void TFMCommandExecutor::pwd_func(const TFMCommand& cmd) {
+void TFM::CommandExecutor::pwd_func(const TFM::Command& cmd) {
     (void)cmd;
     m_rows.append(m_path.get_path().string());
 }
 
-void TFMCommandExecutor::whoami_func(const TFMCommand& cmd) {
+void TFM::CommandExecutor::whoami_func(const TFM::Command& cmd) {
     (void)cmd;
     m_rows.append(m_config.get_username());
 }
 
-void TFMCommandExecutor::cat_func(const TFMCommand& cmd) { (void)cmd; }
+void TFM::CommandExecutor::cat_func(const TFM::Command& cmd) { (void)cmd; }
 
-void TFMCommandExecutor::cp_func(const TFMCommand& cmd) {
+void TFM::CommandExecutor::cp_func(const TFM::Command& cmd) {
     if (cmd.positional.empty() || cmd.positional.size() == 1) {
         manage_error(cmd, MISSING_FILE_OPERAND);
         return;
@@ -272,7 +277,7 @@ void TFMCommandExecutor::cp_func(const TFMCommand& cmd) {
         fs::path target(dst);
 
         if (src == target) {
-            manage_error(cmd, TFMCommandErrorCode::SAME_FILE_PASSED,
+            manage_error(cmd, TFM::CommandErrorCode::SAME_FILE_PASSED,
                          {src.filename()});
             continue;
         }
@@ -364,7 +369,7 @@ void TFMCommandExecutor::cp_func(const TFMCommand& cmd) {
     }
 }
 
-void TFMCommandExecutor::mv_func(const TFMCommand& cmd) {
+void TFM::CommandExecutor::mv_func(const TFM::Command& cmd) {
     // syntax
     // mv [options] src dst
     // rename file: mv file1.txt file2.txt
@@ -490,7 +495,7 @@ void TFMCommandExecutor::mv_func(const TFMCommand& cmd) {
     }
 }
 
-void TFMCommandExecutor::rm_func(const TFMCommand& cmd) {
+void TFM::CommandExecutor::rm_func(const TFM::Command& cmd) {
     // rm [options] object
 
     /*
@@ -587,7 +592,7 @@ void TFMCommandExecutor::rm_func(const TFMCommand& cmd) {
     }
 }
 
-void TFMCommandExecutor::mkdir_func(const TFMCommand& cmd) {
+void TFM::CommandExecutor::mkdir_func(const TFM::Command& cmd) {
     if (cmd.positional.empty()) {
         manage_error(cmd, MISSING_OPERAND);
         return;
@@ -603,7 +608,7 @@ void TFMCommandExecutor::mkdir_func(const TFMCommand& cmd) {
     }
 }
 
-void TFMCommandExecutor::touch_func(const TFMCommand& cmd) {
+void TFM::CommandExecutor::touch_func(const TFM::Command& cmd) {
     bool change_just_access_time = false;
     bool change_just_modification_time = false;
     bool no_file_to_be_created = false;
@@ -676,16 +681,17 @@ void TFMCommandExecutor::touch_func(const TFMCommand& cmd) {
     }
 }
 
-void TFMCommandExecutor::manage_error(const TFMCommand& cmd,
-                                      TFMCommandErrorCode code,
-                                      const std::vector<std::string> data) {
+void TFM::CommandExecutor::manage_error(const TFM::Command& cmd,
+                                        TFM::CommandErrorCode code,
+                                        const std::vector<std::string> data) {
     std::ostringstream message_buf;
     message_buf << cmd.name << ": ";  // common prefix
 
     auto require = [&](size_t idx = 0) -> const std::string& {
         if (data.size() <= idx) {
             throw std::runtime_error(
-                "TFMCommandExecutor::manage_error: expected data to be passed");
+                "TFM::CommandExecutor::manage_error: expected data to be "
+                "passed");
         }
         return data[idx];
     };

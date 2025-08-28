@@ -3,32 +3,34 @@
 #include <cstdint>
 #include <sstream>
 
+namespace TFM {
+
 // responsible for drawing
-class TFMConfig;
-class TFMCursor;
-class TFMRows;
-class TFMScreen;
-class TFMPathHandler;
-class TFMCommandLine;
+class Config;
+class Cursor;
+class Rows;
+class Screen;
+class PathHandler;
+class CommandLine;
 
 /**
  * @brief Provides rendering for all the app's features
  *
  */
-class TFMRenderer {
+class Renderer {
    private:
-    TFMConfig& m_config;
-    TFMRows& m_rows;
-    TFMScreen& m_screen;
-    TFMPathHandler& m_path;
-    TFMCursor& m_cursor;
-    TFMCommandLine& m_command_line;
+    Config& m_config;
+    Rows& m_rows;
+    Screen& m_screen;
+    PathHandler& m_path;
+    Cursor& m_cursor;
+    CommandLine& m_command_line;
 
     std::ostringstream m_abuf;
 
    public:
     /**
-     * @brief Construct a new TFMRenderer object
+     * @brief Construct a new Renderer object
      *
      * @param config
      * @param rows
@@ -37,9 +39,8 @@ class TFMRenderer {
      * @param cursor
      * @param command_line
      */
-    TFMRenderer(TFMConfig& config, TFMRows& rows, TFMScreen& screen,
-                TFMPathHandler& path, TFMCursor& cursor,
-                TFMCommandLine& command_line)
+    Renderer(Config& config, Rows& rows, Screen& screen, PathHandler& path,
+             Cursor& cursor, CommandLine& command_line)
         : m_config{config},
           m_rows{rows},
           m_screen{screen},
@@ -48,10 +49,10 @@ class TFMRenderer {
           m_command_line{command_line} {}
 
     /**
-     * @brief Destroy the TFMRenderer object
+     * @brief Destroy the Renderer object
      *
      */
-    ~TFMRenderer() = default;
+    ~Renderer() = default;
 
     /**
      * @brief Scroll gets updated accordingly with the row offset
@@ -71,3 +72,5 @@ class TFMRenderer {
      */
     void draw();
 };
+
+}  // namespace TFM

@@ -2,11 +2,11 @@
 
 #include <sstream>
 
-TFMCommand TFMCommandParser::parse(const std::string& cmd) const {
+TFM::Command TFM::CommandParser::parse(const std::string& cmd) const {
     std::istringstream iss(cmd);
     std::string buf;
 
-    TFMCommand res;
+    TFM::Command res;
     iss >> res.name;
 
     while (iss >> buf) {

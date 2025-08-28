@@ -7,21 +7,21 @@
 
 #include "renderer.hpp"
 
-TFMScreen* TFMScreen::ms_instance = nullptr;
+TFM::Screen* TFM::Screen::ms_instance = nullptr;
 
-void TFMScreen::handle_exit(int32_t sig) {
+void TFM::Screen::handle_exit(int32_t sig) {
     (void)sig;
     std::exit(0);
 }
 
-void TFMScreen::window_size_update(int32_t sig) {
+void TFM::Screen::window_size_update(int32_t sig) {
     (void)sig;
-    if (TFMScreen::ms_instance) {
-        TFMScreen::ms_instance->update_dimensions(sig);
+    if (TFM::Screen::ms_instance) {
+        TFM::Screen::ms_instance->update_dimensions(sig);
     }
 }
 
-void TFMScreen::update_dimensions(int32_t sig) {
+void TFM::Screen::update_dimensions(int32_t sig) {
     (void)sig;
 
     // update the internal structure of ncurses
@@ -34,7 +34,7 @@ void TFMScreen::update_dimensions(int32_t sig) {
 
     if (rows == -1 || cols == -1) {
         throw std::runtime_error(
-            "TFMScreen: error initializing screen dimensions");
+            "TFM::Screen: error initializing screen dimensions");
     }
 
     m_app_screen.rows = static_cast<size_t>(rows);
@@ -44,7 +44,7 @@ void TFMScreen::update_dimensions(int32_t sig) {
     wrefresh(stdscr);
 }
 
-void TFMScreen::terminal_init() {
+void TFM::Screen::terminal_init() {
     ms_instance = this;
 
     initscr();
@@ -57,7 +57,7 @@ void TFMScreen::terminal_init() {
     std::signal(SIGWINCH, ms_instance->window_size_update);
 }
 
-void TFMScreen::terminal_destroy() {
+void TFM::Screen::terminal_destroy() {
     endwin();
     std::exit(0);
 }

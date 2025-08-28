@@ -9,8 +9,8 @@
 #include "rows.hpp"
 #include "screen.hpp"
 
-void TFMRenderer::adjust_scroll() {
-    const TFMCursorCords& cursor = m_cursor.get();
+void TFM::Renderer::adjust_scroll() {
+    const TFM::CursorCords& cursor = m_cursor.get();
 
     size_t screen_row_off = m_screen.get_row_off();
     size_t screen_rows = m_screen.get_rows();
@@ -24,7 +24,7 @@ void TFMRenderer::adjust_scroll() {
     m_screen.set_row_off(screen_row_off);
 }
 
-void TFMRenderer::display() {
+void TFM::Renderer::display() {
     werase(stdscr);
     adjust_scroll();
     draw();
@@ -33,7 +33,7 @@ void TFMRenderer::display() {
 
     /// @brief this is a const reference to current cursor that will be moved
     /// using move() func
-    const TFMCursorCords& cursor_current = m_cursor.get();
+    const TFM::CursorCords& cursor_current = m_cursor.get();
     int32_t calculated_cy =
         static_cast<int32_t>(cursor_current.cy - m_screen.get_row_off());
     int32_t calculated_cx = static_cast<int32_t>(cursor_current.cx);
@@ -46,7 +46,7 @@ void TFMRenderer::display() {
     m_abuf.clear();
 }
 
-void TFMRenderer::draw() {
+void TFM::Renderer::draw() {
     for (size_t i = m_screen.get_row_off(); i < m_rows.size(); i++) {
         const std::string& row = m_rows.at(i);
         m_abuf << row;

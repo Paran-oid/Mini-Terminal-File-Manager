@@ -6,16 +6,18 @@
 #include "rows.hpp"
 #include "screen.hpp"
 
-class TFMCommandLine;
-class TFMRows;
-class TFMScreen;
-class TFMCommandHistory;
+namespace TFM {
+
+class CommandLine;
+class Rows;
+class Screen;
+class CommandHistory;
 
 /**
  * @brief Holds coordinates of cursor
  *
  */
-struct TFMCursorCords {
+struct CursorCords {
     size_t cx;  ///< cursor x coordinate (cols)
     size_t cy;  ///< cursor y coordinate (rows)
 };
@@ -24,26 +26,26 @@ struct TFMCursorCords {
  * @brief Manages everythin related to cursor
  *
  */
-class TFMCursor {
+class Cursor {
    private:
-    TFMCursorCords m_app_cursor;
+    CursorCords m_app_cursor;
 
-    TFMCommandLine& m_command_line;
-    TFMRows& m_rows;
-    TFMScreen& m_screen;
-    TFMCommandHistory& m_command_history;
+    CommandLine& m_command_line;
+    Rows& m_rows;
+    Screen& m_screen;
+    CommandHistory& m_command_history;
 
    public:
     /**
-     * @brief Construct a new TFMCursor object
+     * @brief Construct a new Cursor object
      *
      * @param command_line
      * @param rows
      * @param screen
      * @param command_history
      */
-    TFMCursor(TFMCommandLine& command_line, TFMRows& rows, TFMScreen& screen,
-              TFMCommandHistory& command_history)
+    Cursor(CommandLine& command_line, Rows& rows, Screen& screen,
+           CommandHistory& command_history)
         : m_command_line{command_line},
           m_rows{rows},
           m_screen{screen},
@@ -51,17 +53,17 @@ class TFMCursor {
         m_app_cursor = {0, 0};
     }
     /**
-     * @brief Destroy the TFMCursor object
+     * @brief Destroy the Cursor object
      *
      */
-    ~TFMCursor() = default;
+    ~Cursor() = default;
 
     /**
      * @brief Gets the current cursor coordinates
      *
-     * @return const TFMCursorCords&
+     * @return const CursorCords&
      */
-    const TFMCursorCords& get() const { return m_app_cursor; }
+    const CursorCords& get() const { return m_app_cursor; }
 
     /**
      * @brief Sets the current cursor coordinates
@@ -123,3 +125,5 @@ class TFMCursor {
         return m_app_cursor.cx >= m_rows.at(m_app_cursor.cy).size();
     }
 };
+
+}  // namespace TFM

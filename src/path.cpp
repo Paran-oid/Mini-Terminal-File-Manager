@@ -8,7 +8,7 @@
 
 #include "utils.hpp"
 
-void TFMPathHandler::set_path(const fs::path& path) {
+void TFM::PathHandler::set_path(const fs::path& path) {
     m_current_path = path;
 
     const char* path_c_str = path.c_str();
@@ -17,7 +17,7 @@ void TFMPathHandler::set_path(const fs::path& path) {
     }
 }
 
-void TFMPathHandler::update_home_dir() {
+void TFM::PathHandler::update_home_dir() {
     const std::string& path = m_current_path.string();
 
     uint8_t counter = 0;
@@ -40,7 +40,7 @@ void TFMPathHandler::update_home_dir() {
         path.substr(0, static_cast<size_t>(std::distance(path.begin(), it)));
 }
 
-void TFMPathHandler::expand(std::string& path) {
+void TFM::PathHandler::expand(std::string& path) {
     if (path[0] != '~' || std::count(path.begin(), path.end(), '~') > 1) {
         return;
     }

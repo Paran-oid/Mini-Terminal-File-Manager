@@ -3,11 +3,13 @@
 #include <string>
 #include <vector>
 
+namespace TFM {
+
 /**
  * @brief Describes a command
  *
  */
-struct TFMCommand {
+struct Command {
     std::string name;                ///< name of the respective command
     std::vector<std::string> flags;  ///< any associated flags attached to it
     std::vector<std::string> positional;  ///< expected arguments
@@ -17,25 +19,27 @@ struct TFMCommand {
  * @brief Handles parsing commands
  *
  */
-class TFMCommandParser {
+class CommandParser {
    private:
    public:
     /**
-     * @brief Construct a new TFMCommandParser object
+     * @brief Construct a new CommandParser object
      *
      */
-    TFMCommandParser() = default;
+    CommandParser() = default;
     /**
-     * @brief Destroy the TFMCommandParser object
+     * @brief Destroy the CommandParser object
      *
      */
-    ~TFMCommandParser() = default;
+    ~CommandParser() = default;
 
     /**
      * @brief Returns a correctly formatted command
      *
      * @param command
-     * @return TFMCommand
+     * @return Command
      */
-    TFMCommand parse(const std::string& command) const;
+    Command parse(const std::string& command) const;
 };
+
+}  // namespace TFM

@@ -10,8 +10,8 @@
 #include "renderer.hpp"
 #include "rows.hpp"
 
-std::string TFMDialog::prompt(const std::string& message) {
-    m_input.commandline_insert(message, TFMMessageType::M_OTHER);
+std::string TFM::Dialog::prompt(const std::string& message) {
+    m_input.commandline_insert(message, MessageType::M_OTHER);
     m_renderer.display();
     std::ostringstream out;
     int c;

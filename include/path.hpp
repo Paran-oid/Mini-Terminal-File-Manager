@@ -3,13 +3,15 @@
 #include <filesystem>
 #include <vector>
 
+namespace TFM {
+
 namespace fs = std::filesystem;
 
 /**
  * @brief Responsible for Path handling
  *
  */
-class TFMPathHandler {
+class PathHandler {
    private:
     fs::path m_current_path;
     fs::path m_previous_path;
@@ -18,16 +20,16 @@ class TFMPathHandler {
 
    public:
     /**
-     * @brief Construct a new TFMPathHandler object
+     * @brief Construct a new PathHandler object
      *
      */
-    TFMPathHandler() : m_current_path{fs::current_path()} { update_home_dir(); }
+    PathHandler() : m_current_path{fs::current_path()} { update_home_dir(); }
 
     /**
-     * @brief Destroy the TFMPathHandler object
+     * @brief Destroy the PathHandler object
      *
      */
-    ~TFMPathHandler() = default;
+    ~PathHandler() = default;
 
     /**
      * @brief Get the path object
@@ -75,3 +77,5 @@ class TFMPathHandler {
      */
     void expand(std::string& path);
 };
+
+}  // namespace TFM

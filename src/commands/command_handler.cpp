@@ -14,12 +14,12 @@
 
 namespace fs = std::filesystem;
 
-void TFMCommandHandler::process(const std::string& input) {
+void TFM::CommandHandler::process(const std::string& input) {
     if (input.empty()) {
         return;
     }
 
-    TFMCommand cmd = m_parser.parse(input);
+    TFM::Command cmd = m_parser.parse(input);
 
     if (cmd.name.empty()) {
         return;

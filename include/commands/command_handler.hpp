@@ -7,36 +7,34 @@
 #include "command_parser.hpp"
 
 namespace TFM {
+
 class FileManager;
-
-}  // namespace TFM
-
-class TFMCommandParser;
-class TFMCommandMapper;
-class TFMCommandExecutor;
-struct TFMCommand;
-class TFMPathHandler;
-class TFMRows;
-class TFMScreen;
-class TFMConfig;
-class TFMDialog;
+class CommandParser;
+class CommandMapper;
+class CommandExecutor;
+struct Command;
+class PathHandler;
+class Rows;
+class Screen;
+class Config;
+class Dialog;
 
 /// @brief fn defined to be able to map each command (string) to function (fn)
-using fn = void (TFMCommandExecutor::*)(const TFMCommand&);
+using fn = void (CommandExecutor::*)(const Command&);
 
 /**
  * @brief Orchestrates command componments (parser, mapper, executor)
  *
  */
-class TFMCommandHandler {
+class CommandHandler {
    private:
-    TFMCommandParser m_parser;
-    TFMCommandMapper m_mapper;
-    TFMCommandExecutor m_executor;
+    CommandParser m_parser;
+    CommandMapper m_mapper;
+    CommandExecutor m_executor;
 
    public:
     /**
-     * @brief Construct a new TFMCommandHandler object and maps each command
+     * @brief Construct a new CommandHandler object and maps each command
      * with it's function
      *
      * @param path
@@ -46,38 +44,38 @@ class TFMCommandHandler {
      * @param cursor
      * @param dialog
      */
-    TFMCommandHandler(TFMPathHandler& path, TFMRows& rows, TFMScreen& screen,
-                      TFMConfig& config, TFMCursor& cursor, TFMDialog& dialog,
-                      TFM::FileManager& file_manager)
+    CommandHandler(PathHandler& path, Rows& rows, Screen& screen,
+                   Config& config, Cursor& cursor, Dialog& dialog,
+                   FileManager& file_manager)
         : m_parser(),
           m_mapper(),
           m_executor(path, rows, screen, config, cursor, dialog, file_manager) {
         std::unordered_map<std::string, fn> commands_map{
-            {"cd", &TFMCommandExecutor::cd_func},
-            {"ls", &TFMCommandExecutor::ls_func},
-            {"pwd", &TFMCommandExecutor::pwd_func},
-            {"clear", &TFMCommandExecutor::clear_func},
-            {"whoami", &TFMCommandExecutor::whoami_func},
-            {"cp", &TFMCommandExecutor::cp_func},
-            {"mkdir", &TFMCommandExecutor::mkdir_func},
-            {"touch", &TFMCommandExecutor::touch_func},
-            {"cat", &TFMCommandExecutor::cat_func},
-            {"mv", &TFMCommandExecutor::mv_func},
-            {"rm", &TFMCommandExecutor::rm_func}};
+            {"cd", &CommandExecutor::cd_func},
+            {"ls", &CommandExecutor::ls_func},
+            {"pwd", &CommandExecutor::pwd_func},
+            {"clear", &CommandExecutor::clear_func},
+            {"whoami", &CommandExecutor::whoami_func},
+            {"cp", &CommandExecutor::cp_func},
+            {"mkdir", &CommandExecutor::mkdir_func},
+            {"touch", &CommandExecutor::touch_func},
+            {"cat", &CommandExecutor::cat_func},
+            {"mv", &CommandExecutor::mv_func},
+            {"rm", &CommandExecutor::rm_func}};
 
         for (auto& [name, func_ptr] : commands_map) {
             m_mapper.register_command(name,
-                                      [this, func_ptr](const TFMCommand& cmd) {
+                                      [this, func_ptr](const Command& cmd) {
                                           (m_executor.*func_ptr)(cmd);
                                       });
         }
     }
 
     /**
-     * @brief Destroy the TFMCommandHandler object
+     * @brief Destroy the CommandHandler object
      *
      */
-    ~TFMCommandHandler() = default;
+    ~CommandHandler() = default;
 
     /**
      * @brief Processes entered command by user
@@ -86,3 +84,5 @@ class TFMCommandHandler {
      */
     void process(const std::string& input);
 };
+
+}  // namespace TFM

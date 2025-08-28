@@ -8,8 +8,8 @@
 #include "renderer.hpp"
 #include "utils.hpp"
 
-void TFMCursor::move(int32_t direction) {
-    TFMScreenDetails screen = m_screen.get();
+void TFM::Cursor::move(int32_t direction) {
+    TFM::ScreenDetails screen = m_screen.get();
 
     size_t current_index = m_app_cursor.cy;
     std::string current_row = m_rows.at(current_index);
@@ -39,7 +39,8 @@ void TFMCursor::move(int32_t direction) {
                 m_app_cursor.cy--;
                 if (current_index == 0) {
                     throw std::runtime_error(
-                        "TFMCursor::move: can't decrment current_index when it "
+                        "TFM::Cursor::move: can't decrment current_index when "
+                        "it "
                         "is 0");
                 }
                 current_row = m_rows.at(--current_index);
@@ -79,13 +80,13 @@ void TFMCursor::move(int32_t direction) {
             break;
         default:
             throw std::invalid_argument(
-                "TFMCursor: invalid cursor move instruction");
+                "TFM::Cursor: invalid cursor move instruction");
     }
 
     set(m_app_cursor.cx, m_app_cursor.cy);
 }
 
-void TFMCursor::super_move(int32_t key) {
+void TFM::Cursor::super_move(int32_t key) {
     char c = m_rows.at(m_app_cursor.cy)[m_app_cursor.cx];
     switch (key) {
         case KEY_CTRL_RIGHT:
@@ -121,12 +122,12 @@ void TFMCursor::super_move(int32_t key) {
             break;
         default:
             throw std::runtime_error(
-                "TFMCursor::super_move: invalid key passed");
+                "TFM::Cursor::super_move: invalid key passed");
             break;
     }
 }
 
-void TFMCursor::move_to_end() {
+void TFM::Cursor::move_to_end() {
     while (!is_cursor_at_end()) {
         this->move(KEY_RIGHT);
     }
