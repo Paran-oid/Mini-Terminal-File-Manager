@@ -142,7 +142,6 @@ void TFM::Input::process() {
     if (c != KEY_PPAGE && c != KEY_NPAGE &&
         (previous_c == KEY_PPAGE || previous_c == KEY_NPAGE)) {
         m_cursor.move_to_end();
-        // TODO: make this work
     }
 
     switch (c) {

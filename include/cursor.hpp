@@ -130,8 +130,8 @@ class Cursor {
      * @return false
      */
     bool is_cursor_at_end() {
-        return (m_app_cursor.cx >= m_rows.at(m_app_cursor.cy).size()) &&
-               (m_app_cursor.cy == m_rows.size() - 1);
+        return (m_app_cursor.cy == m_rows.size() - 1) &&
+               (m_app_cursor.cx >= m_rows.at(m_app_cursor.cy).size());
     }
 };
 

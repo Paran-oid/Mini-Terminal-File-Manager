@@ -1,5 +1,7 @@
 #pragma once
 
+#include <filesystem>
+
 #include "command_handler.hpp"
 #include "command_history.hpp"
 #include "command_line.hpp"

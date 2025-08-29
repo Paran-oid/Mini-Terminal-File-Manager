@@ -12,8 +12,6 @@
 #include <iostream>
 #include <sstream>
 
-namespace fs = std::filesystem;
-
 TFM::File TFM::FileManager::file_init(const std::string& path) {
     if (!fs::exists(path)) {
         throw std::runtime_error("file with this path not found");
@@ -173,4 +171,39 @@ std::string TFM::FileManager::str_file_details(const File& file,
        << " " << formatted_time << " " << file.name;
 
     return os.str();
+}
+
+size_t TFM::FileManager::file_dir_size(const fs::path& path) {
+    size_t total = 0;
+
+    if (fs::is_directory(path)) {
+        for (const auto& entry : fs::directory_iterator(path)) {
+            if (fs::is_directory(entry)) {
+                total += this->file_dir_size(entry);
+            } else {
+                total += fs::file_size(entry);
+            }
+        }
+        return total;
+    } else {
+        return fs::file_size(path);
+    }
+}
+
+size_t TFM::FileManager::total_blocks(const fs::path& path) {
+    struct stat st;
+    if (stat(path.c_str(), &st) != 0) return 0;
+
+    if (!fs::is_directory(path)) {
+        return static_cast<size_t>(st.st_blocks);
+    } else {
+        size_t total_blocks = static_cast<size_t>(st.st_blocks);
+        for (const auto& entry : fs::directory_iterator(path)) {
+            if (stat(entry.path().c_str(), &st) == 0) {
+                total_blocks += static_cast<size_t>(
+                    st.st_blocks);  // already in 512-byte blocks
+            }
+        }
+        return total_blocks;
+    }
 }

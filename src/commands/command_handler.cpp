@@ -12,8 +12,6 @@
 #include "rows.hpp"
 #include "screen.hpp"
 
-namespace fs = std::filesystem;
-
 void TFM::CommandHandler::process(const std::string& input) {
     if (input.empty()) {
         return;

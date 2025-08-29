@@ -98,10 +98,25 @@ void TFM::CommandExecutor::ls_func(const TFM::Command& cmd) {
         }
     }
 
-    // initialize the map
-    bool single_path = false;
-    std::unordered_map<fs::path, std::vector<fs::path>> path_file_map;
+    // TODO: check if improvements are possible throughout project
+    /*
+    - decrease code size
+    - create more functions to increase clarity
+    */
 
+    // initialize the map
+    std::unordered_map<fs::path, std::vector<fs::path>> path_file_map;
+    std::vector<fs::path> output_files;  // needed for long listing
+
+    /*
+    single path passed as parameter, won't be needing to show name
+    of arg when iterating through list if there are multiple files/dirs
+    arg1: data1.txt data2.txt (single_path: false)
+    data1.txt data2.txt (single_path : true)
+    */
+    bool single_path = false;
+
+    // No argument, we just pass current path
     if (cmd.positional.empty()) {
         path_file_map[m_path.get_path()];
         single_path = true;
@@ -139,31 +154,132 @@ void TFM::CommandExecutor::ls_func(const TFM::Command& cmd) {
                 continue;
             }
             path_file.second.push_back(filename);
+            output_files.push_back(filename);
         }
     }
 
     // sort the vectors of each path
-    for (auto& path_file : path_file_map) {
-        if (sort_according_to_modification_time) {
-            // TODO
+    if (sort_according_to_modification_time) {
+        std::vector<TFM::File> all_files;
+        for (auto& path_file : path_file_map) {
+            std::vector<TFM::File> files_in_path;
+            for (const auto& file_str : path_file.second) {
+                TFM::File created_file = m_file_manager.file_init(file_str);
+                files_in_path.push_back(created_file);
+                all_files.push_back(created_file);
+            }
+
+            if (reverse_order) {
+                std::sort(files_in_path.begin(), files_in_path.end(),
+                          [](const TFM::File& f1, const TFM::File& f2) {
+                              return f1.timestamps[1] < f2.timestamps[1];
+                          });
+            } else {
+                std::sort(files_in_path.begin(), files_in_path.end(),
+                          [](const TFM::File& f1, const TFM::File& f2) {
+                              return f1.timestamps[1] > f2.timestamps[1];
+                          });
+            }
+
+            path_file.second.clear();
+            for (const TFM::File& file : files_in_path) {
+                path_file.second.push_back(file.name);
+            }
+        }
+
+        if (reverse_order) {
+            std::sort(all_files.begin(), all_files.end(),
+                      [](const TFM::File& f1, const TFM::File& f2) {
+                          return f1.timestamps[1] < f2.timestamps[1];
+                      });
         } else {
+            std::sort(all_files.begin(), all_files.end(),
+                      [](const TFM::File& f1, const TFM::File& f2) {
+                          return f1.timestamps[1] > f2.timestamps[1];
+                      });
+        }
+
+        all_files.clear();
+        for (const TFM::File& file : all_files) {
+            output_files.push_back(file.name);
+        }
+
+    } else {
+        for (auto& path_file : path_file_map) {
             if (reverse_order) {
                 std::sort(path_file.second.begin(), path_file.second.end(),
-                          std::greater<>());
+                          [](const fs::path& a, const fs::path& b) {
+                              auto sa = a.filename().string();
+                              auto sb = b.filename().string();
+
+                              std::transform(sa.begin(), sa.end(), sa.begin(),
+                                             ::tolower);
+                              std::transform(sb.begin(), sb.end(), sb.begin(),
+                                             ::tolower);
+
+                              return sa > sb;
+                          });
             } else {
-                std::sort(path_file.second.begin(), path_file.second.end());
+                std::sort(path_file.second.begin(), path_file.second.end(),
+                          [](const fs::path& a, const fs::path& b) {
+                              auto sa = a.filename().string();
+                              auto sb = b.filename().string();
+
+                              std::transform(sa.begin(), sa.end(), sa.begin(),
+                                             ::tolower);
+                              std::transform(sb.begin(), sb.end(), sb.begin(),
+                                             ::tolower);
+
+                              return sa < sb;
+                          });
             }
+        }
+
+        if (reverse_order) {
+            std::sort(
+                output_files.begin(), output_files.end(),
+                [](const fs::path& a, const fs::path& b) {
+                    auto sa = a.filename().string();
+                    auto sb = b.filename().string();
+
+                    std::transform(sa.begin(), sa.end(), sa.begin(), ::tolower);
+                    std::transform(sb.begin(), sb.end(), sb.begin(), ::tolower);
+
+                    return sa > sb;
+                });
+
+        } else {
+            std::sort(
+                output_files.begin(), output_files.end(),
+                [](const fs::path& a, const fs::path& b) {
+                    auto sa = a.filename().string();
+                    auto sb = b.filename().string();
+
+                    std::transform(sa.begin(), sa.end(), sa.begin(), ::tolower);
+                    std::transform(sb.begin(), sb.end(), sb.begin(), ::tolower);
+
+                    return sa < sb;
+                });
         }
     }
 
-    for (auto it = path_file_map.begin(); it != path_file_map.end(); it++) {
-        // get longest length (we will get pair iterator returned)
+    if (long_listing) {
+        // TODO: make this handle multiple paths
+        auto curr_path = fs::path(path_file_map.begin()->first);
+        m_rows.append("total: " +
+                      std::to_string(m_file_manager.total_blocks(curr_path)));
+        for (const auto& filename : output_files) {
+            const TFM::File file = m_file_manager.file_init(filename);
+            const std::string formatted =
+                m_file_manager.str_file_details(file, human_readable);
+            m_rows.append(formatted);
+        }
+    } else {
+        for (auto it = path_file_map.begin(); it != path_file_map.end(); it++) {
+            auto& path = it->first;
+            auto& filenames = it->second;
 
-        auto& path = it->first;
-        auto& filenames = it->second;
-
-        // TODO: implement scrolling FFS
-        if (!long_listing) {
+            // get longest length (we will get pair iterator returned)
             bool is_last_iterator = (std::next(it) == path_file_map.end());
 
             auto it_max_length = std::max_element(
@@ -176,6 +292,7 @@ void TFM::CommandExecutor::ls_func(const TFM::Command& cmd) {
                 return;
             }
 
+            // determine number of cols and rows
             size_t max_length = it_max_length->string().length() + LS_PADDING;
             size_t cols = static_cast<size_t>(m_screen.get_cols() / max_length);
             size_t rows = static_cast<size_t>(
@@ -214,13 +331,6 @@ void TFM::CommandExecutor::ls_func(const TFM::Command& cmd) {
 
             if (!is_last_iterator) {
                 m_rows.append("");
-            }
-        } else {
-            for (const auto& filename : filenames) {
-                const TFM::File file = m_file_manager.file_init(filename);
-                const std::string formatted =
-                    m_file_manager.str_file_details(file, human_readable);
-                m_rows.append(formatted);
             }
         }
     }

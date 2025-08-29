@@ -128,8 +128,8 @@ void TFM::Cursor::super_move(int32_t key) {
 }
 
 void TFM::Cursor::move_to_end() {
+    this->m_app_cursor.cy = m_rows.size() - 1;
     while (!is_cursor_at_end()) {
-        // TODO: make this actually move to last place possible
         this->move(KEY_RIGHT);
     }
 }

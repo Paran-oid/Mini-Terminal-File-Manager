@@ -2,8 +2,11 @@
 
 #include <array>
 #include <cstdint>
+#include <filesystem>
 #include <string>
 #include <vector>
+
+namespace fs = std::filesystem;
 
 namespace TFM {
 
@@ -88,6 +91,8 @@ class FileManager {
      * @return std::string
      */
     std::string str_file_details(const File& file, bool human_readable);
+    size_t file_dir_size(const fs::path& path);
+    size_t total_blocks(const fs::path& path);
 };
 
 }  // namespace TFM
