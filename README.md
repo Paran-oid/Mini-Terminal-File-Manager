@@ -2,6 +2,8 @@
 
 **Terminal File Manager (TFM)** is a modular, extensible file manager for the terminal, written in modern C++. It aims to provide a full-featured, responsive, and user-friendly file management experience entirely within your terminal window.
 
+<img width="1450" height="320" alt="Screenshot from 2025-08-29 16-27-36" src="https://github.com/user-attachments/assets/5a3777d2-702a-493b-a4a9-e80cf9f1735d" />
+
 ## Features
 
 - **Full Terminal UI**: Navigate and manage files and directories from a robust terminal interface.
